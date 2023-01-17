@@ -1,25 +1,25 @@
-package com.example.relayRun.group.entity;
+package com.example.relayRun.club.entity;
 
-import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.util.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Group")
-public class GroupEntity extends BaseTimeEntity {
+@DynamicInsert
+@Table(name = "Club")
+public class ClubEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long groupIdx;
+    private Long clubIdx;
 
     @Column(nullable = false, length = 20)
     private String name;
@@ -35,7 +35,7 @@ public class GroupEntity extends BaseTimeEntity {
     private UserProfileEntity hostIdx;
 
     @Column(nullable = false, columnDefinition = "varchar(1) default 'Y'")
-    private Character acceptAll;
+    private String acceptAll;
 
     @Column(nullable = false, columnDefinition = "integer default 8")
     private Integer maxNum;

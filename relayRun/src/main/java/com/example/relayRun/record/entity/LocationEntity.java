@@ -6,12 +6,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import javax.persistence.*;
+
+import org.hibernate.annotations.DynamicInsert;
 import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicInsert
 @Table(name = "Location")
 
 public class LocationEntity {
