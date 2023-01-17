@@ -2,7 +2,7 @@ package com.example.relayRun.group.entity;
 
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
-import com.example.relayRun.util.BaseTimeEntity;
+import com.example.relayRun.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,8 +43,9 @@ public class GroupEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer level;
 
-    @Column(nullable = false)
-    private Integer goalType;
+    @Column(name = "goalType", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private GoalType goalType;
 
     @Column(nullable = false)
     private Float goal;
