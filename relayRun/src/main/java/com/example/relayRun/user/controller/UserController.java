@@ -7,6 +7,7 @@ import com.example.relayRun.user.service.UserService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
 import com.example.relayRun.util.BaseResponseStatus;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,6 +21,7 @@ public class UserController {
     }
 
     @ResponseBody
+    @ApiOperation(value = "회원가입", notes ="body : name, email, pwd")
     @PostMapping("/sign-in")
     public BaseResponse<TokenDto> signIn(@RequestBody PostUserReq user) {
         try {
