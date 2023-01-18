@@ -30,11 +30,6 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
     }
 
     @ResponseBody
@@ -50,23 +45,6 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
-<<<<<<< HEAD
-=======
->>>>>>> main
-    }
-
-//    @ResponseBody
-//    @PostMapping("/logIn")
-//    public BaseResponse<TokenDto> logIn(@RequestBody PostUserReq user) {
-//        if (user.getEmail().length() == 0 || user.getEmail() == null ) {
-//            return new BaseResponse<>(BaseResponseStatus.POST_USERS_EMPTY_EMAIL);
-//        }
-//        try{
-//            TokenDto token = this.userService.logIn(user);
-//        }
-//    }
-=======
->>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
 
     }
 }

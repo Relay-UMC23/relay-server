@@ -3,6 +3,7 @@ package com.example.relayRun.club.entity;
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.util.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -55,5 +56,17 @@ public class ClubEntity extends BaseTimeEntity {
 
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
+
+    @Builder
+    public ClubEntity(Long clubIdx, String name, String content, UserProfileEntity hostIdx,
+                      Integer level, GoalType goalType, Float goal){
+        this.clubIdx = clubIdx;
+        this.name = name;
+        this.content = content;
+        this.hostIdx = hostIdx;
+        this.level = level;
+        this.goalType = goalType;
+        this.goal = goal;
+    }
 
 }
