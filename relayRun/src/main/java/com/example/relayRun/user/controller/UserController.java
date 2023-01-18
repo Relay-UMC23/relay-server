@@ -31,6 +31,10 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
     }
 
     @ResponseBody
@@ -46,6 +50,7 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
+<<<<<<< HEAD
 =======
 >>>>>>> main
     }
@@ -60,5 +65,8 @@ public class UserController {
 //            TokenDto token = this.userService.logIn(user);
 //        }
 //    }
+=======
+>>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
 
+    }
 }
