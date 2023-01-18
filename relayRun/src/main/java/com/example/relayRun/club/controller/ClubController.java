@@ -24,9 +24,9 @@ public class ClubController {
 
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<List<ClubEntity>> getClubs() {
+    public BaseResponse<List<ClubDTO.ClubList>> getClubs() {
         try {
-            List<ClubEntity> clubList = clubService.getClubs();
+            List<ClubDTO.ClubList> clubList = clubService.getClubs();
             return new BaseResponse<>(clubList);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());

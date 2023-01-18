@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ClubRepository extends JpaRepository <ClubEntity, Long> {
-    List<ClubEntity> findByOrderByRecruitStatusDesc();
+    List<ClubEntity> findAll();
 }

@@ -3,6 +3,7 @@ package com.example.relayRun.club.entity;
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.util.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -12,7 +13,6 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @DynamicInsert
 @Table(name = "club")
 public class ClubEntity extends BaseTimeEntity {
@@ -55,5 +55,6 @@ public class ClubEntity extends BaseTimeEntity {
 
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
+
 
 }
