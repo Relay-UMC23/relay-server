@@ -1,7 +1,9 @@
 package com.example.relayRun.user.entity;
 
 import com.example.relayRun.util.BaseTimeEntity;
+import com.example.relayRun.util.Role;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -31,11 +33,22 @@ public class UserEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
-    @Column(name = "loginType", nullable = false)
+    @Column(name = "loginType", columnDefinition = "varchar(10) default 'BASIC'")
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "userProfileIdx", orphanRemoval = true)
     private List<UserProfileEntity> userProfileEntities = new ArrayList<>();
 
-}
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    @Builder
+    public UserEntity(String email, String pwd, String status, Role role){
+            this.email = email;
+            this.pwd = pwd;
+            this.status = status;
+            this.role = role;
+        }
+    }
