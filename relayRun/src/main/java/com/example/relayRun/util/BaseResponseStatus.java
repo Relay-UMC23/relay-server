@@ -18,6 +18,9 @@ public enum BaseResponseStatus {
     /*
      * 4000: [POST]
      * */
+    PASSWORD_ENCRYPTION_ERROR(false, 4001, "비밀번호 암호화에 실패했습니다."),
+    DATABASE_ERROR(false, 4002, "데이터베이스 연결에 실패하였습니다."),
+    POST_CLUBS_FAIL(false, 4020, "그룹 생성에 실패하였습니다."),
     POST_USERS_EMPTY(false, 4777, "공백 없이 입력해주세요."),
     POST_USERS_EMPTY_EMAIL(false, 4778,"이메일을 입력해주세요"),
     POST_USERS_EMPTY_NAME(false, 4779,"이름을 입력해주세요"),
@@ -30,8 +33,7 @@ public enum BaseResponseStatus {
     /*
      * 5000: database error
      * */
-    PASSWORD_ENCRYPTION_ERROR(false, 4001, "비밀번호 암호화에 실패했습니다."),
-    DATABASE_ERROR(false, 4002, "데이터베이스 연결에 실패하였습니다."),
+
     /*
      * 7000 : PATCH
      * */

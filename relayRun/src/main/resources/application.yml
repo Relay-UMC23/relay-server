@@ -10,8 +10,11 @@ spring:
             mysql:
               MySQL56InnoDBSpatialDialect
         ddl-auto:
-          create
+          update
       generate-ddl:
         false
     show-sql:
       true
+
+server:
+  port: 9000

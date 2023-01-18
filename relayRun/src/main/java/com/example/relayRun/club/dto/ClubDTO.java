@@ -9,7 +9,7 @@ public class ClubDTO {
 //    @Setter
 //    @AllArgsConstructor
 ////    @Builder
-//    public static class Club {
+//    public class Club {
 //        private Long clubIdx;
 //        private String name;
 //        private String content;
@@ -23,6 +23,7 @@ public class ClubDTO {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class ClubList {
         private Long clubIdx;
         private String name;
