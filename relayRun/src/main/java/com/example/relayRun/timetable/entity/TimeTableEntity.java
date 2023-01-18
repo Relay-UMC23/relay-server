@@ -1,7 +1,7 @@
 package com.example.relayRun.timetable.entity;
 
 import com.example.relayRun.club.entity.MemberStatusEntity;
-import com.example.relayRun.util.BaseTimeEntity;
+import com.example.relayRun.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,8 +39,9 @@ public class TimeTableEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Float goal;
 
-    @Column(nullable = false)
-    private Integer goalType;
+    @Column(name = "goalType", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private GoalType goalType;
 
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
