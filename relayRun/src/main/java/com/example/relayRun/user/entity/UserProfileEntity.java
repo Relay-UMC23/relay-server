@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@Table(name = "UserProfile")
+@Table(name = "user_profile")
 public class UserProfileEntity extends BaseTimeEntity {
 
     @Id

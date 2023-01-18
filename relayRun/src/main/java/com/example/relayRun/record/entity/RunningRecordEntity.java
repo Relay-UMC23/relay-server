@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@Table(name = "RunningRecord")
+@Table(name = "running_record")
 public class RunningRecordEntity extends BaseTimeEntity {
 
     @Id
