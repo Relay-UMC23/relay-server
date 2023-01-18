@@ -2,6 +2,7 @@ package com.example.relayRun.user.controller;
 
 
 import com.example.relayRun.jwt.dto.TokenDto;
+import com.example.relayRun.user.dto.GetUserRes;
 import com.example.relayRun.user.dto.PostLoginReq;
 import com.example.relayRun.user.dto.PostUserReq;
 import com.example.relayRun.user.service.UserService;
@@ -9,6 +10,8 @@ import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
 import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping(value = "/users")
@@ -30,11 +33,6 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
     }
 
     @ResponseBody
@@ -50,23 +48,15 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
-<<<<<<< HEAD
-=======
->>>>>>> main
     }
 
-//    @ResponseBody
-//    @PostMapping("/logIn")
-//    public BaseResponse<TokenDto> logIn(@RequestBody PostUserReq user) {
-//        if (user.getEmail().length() == 0 || user.getEmail() == null ) {
-//            return new BaseResponse<>(BaseResponseStatus.POST_USERS_EMPTY_EMAIL);
-//        }
-//        try{
-//            TokenDto token = this.userService.logIn(user);
-//        }
-//    }
-=======
->>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
-
+    @GetMapping("/")
+    public BaseResponse<GetUserRes> getInfo(Principal principal) {
+        try{
+            GetUserRes result = userService.getUserInfo(principal);
+            return new BaseResponse<>(result);
+        }catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
     }
 }
