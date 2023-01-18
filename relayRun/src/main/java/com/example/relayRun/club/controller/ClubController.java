@@ -5,10 +5,7 @@ import com.example.relayRun.club.service.ClubService;
 import com.example.relayRun.club.dto.ClubDTO;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,9 +21,14 @@ public class ClubController {
 
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<List<ClubDTO.ClubList>> getClubs() {
+    public BaseResponse<List<ClubDTO.ClubList>> getClubs(@RequestParam(required = false) String search) {
         try {
-            List<ClubDTO.ClubList> clubList = clubService.getClubs();
+            List<ClubDTO.ClubList> clubList;
+            if(search == null) {
+                clubList = clubService.getClubs();
+            } else {
+                clubList = clubService.getClubsByName(search);
+            }
             return new BaseResponse<>(clubList);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());

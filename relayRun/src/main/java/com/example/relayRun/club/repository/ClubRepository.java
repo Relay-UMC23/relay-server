@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface ClubRepository extends JpaRepository <ClubEntity, Long> {
     List<ClubEntity> findAll();
+    List<ClubEntity> findByNameContaining(String search);
 }
