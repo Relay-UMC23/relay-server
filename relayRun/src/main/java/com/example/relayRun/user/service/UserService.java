@@ -86,7 +86,7 @@ public class UserService {
         else{
             // 소셜 타입 확인
             UserEntity userEntity = optional.get();
-            if(!userEntity.getLoginType().equals("BASIC")){
+            if(!userEntity.getLoginType().equals(LoginType.BASIC)){
                 throw new BaseException(BaseResponseStatus.SOCIAL);
             }
             // 입력받은 pwd와 entity pwd와 비교

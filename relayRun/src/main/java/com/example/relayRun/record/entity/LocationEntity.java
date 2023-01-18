@@ -15,7 +15,7 @@ import org.locationtech.jts.geom.Point;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@Table(name = "Location")
+@Table(name = "location")
 
 public class LocationEntity {
     @Id
