@@ -4,6 +4,7 @@ import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
+import com.example.relayRun.user.dto.GetUserRes;
 import com.example.relayRun.user.dto.PostLoginReq;
 import com.example.relayRun.user.dto.PostUserReq;
 import com.example.relayRun.user.entity.LoginType;
@@ -18,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.Optional;
 
 import static com.example.relayRun.util.ValidationRegex.isRegexEmail;
@@ -164,6 +166,19 @@ public class UserService {
 
         // 토큰 발급
         return tokenDto;
+    }
+
+    public GetUserRes getUserInfo(Principal principal) throws BaseException {
+        Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+        if(optionalUserEntity.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+        }
+        UserEntity userEntity = optionalUserEntity.get();
+        GetUserRes result = new GetUserRes(
+                userEntity.getEmail(),
+                userEntity.getName()
+        );
+        return result;
     }
 }
 

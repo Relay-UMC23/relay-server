@@ -2,6 +2,7 @@ package com.example.relayRun.user.controller;
 
 
 import com.example.relayRun.jwt.dto.TokenDto;
+import com.example.relayRun.user.dto.GetUserRes;
 import com.example.relayRun.user.dto.PostLoginReq;
 import com.example.relayRun.user.dto.PostUserReq;
 import com.example.relayRun.user.service.UserService;
@@ -10,6 +11,8 @@ import com.example.relayRun.util.BaseResponse;
 import com.example.relayRun.util.BaseResponseStatus;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping(value = "/users")
@@ -46,6 +49,16 @@ public class UserController {
             return new BaseResponse<>(token);
 
         } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/")
+    public BaseResponse<GetUserRes> getInfo(Principal principal) {
+        try{
+            GetUserRes result = userService.getUserInfo(principal);
+            return new BaseResponse<>(result);
+        }catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
