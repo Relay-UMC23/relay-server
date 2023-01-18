@@ -1,0 +1,7 @@
+spring.profiles.include: 'secret'
+
+spring:
+  jpa:
+    hibernate.ddl-auto: create
+    generate-ddl: false
+    show-sql: true
