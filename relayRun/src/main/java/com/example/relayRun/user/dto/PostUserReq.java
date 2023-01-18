@@ -10,13 +10,15 @@ import javax.management.relation.Role;
 @AllArgsConstructor
 public class PostUserReq {
     private Long userIdx;
+    private String name;
     private String email;
     private String pwd;
     private Role role;
 
     @Builder
-    public PostUserReq(Long userIdx, String email, String pwd){
+    public PostUserReq(Long userIdx, String name, String email, String pwd){
         this.userIdx = userIdx;
+        this.name = name;
         this.email = email;
         this.pwd = pwd;
     }
