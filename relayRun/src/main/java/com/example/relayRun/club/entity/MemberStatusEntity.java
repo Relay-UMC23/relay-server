@@ -1,4 +1,4 @@
-package com.example.relayRun.group.entity;
+package com.example.relayRun.club.entity;
 
 import com.example.relayRun.record.entity.RunningRecordEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
@@ -6,9 +6,9 @@ import com.example.relayRun.util.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicInsert
 @Table(name = "MemberStatus")
 public class MemberStatusEntity extends BaseTimeEntity {
 
@@ -24,8 +25,8 @@ public class MemberStatusEntity extends BaseTimeEntity {
     private Long memberStatusIdx;
 
     @ManyToOne
-    @JoinColumn(name = "groupIdx")
-    private GroupEntity groupIdx;
+    @JoinColumn(name = "clubIdx")
+    private ClubEntity clubIdx;
 
     @ManyToOne
     @JoinColumn(name = "userProfileIdx")

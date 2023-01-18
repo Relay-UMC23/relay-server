@@ -1,13 +1,13 @@
 package com.example.relayRun.record.entity;
 
-import com.example.relayRun.group.entity.MemberStatusEntity;
+import com.example.relayRun.club.entity.MemberStatusEntity;
 import com.example.relayRun.util.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicInsert
 @Table(name = "RunningRecord")
 public class RunningRecordEntity extends BaseTimeEntity {
 
@@ -44,6 +45,6 @@ public class RunningRecordEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "runningRecordIdx", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy="recordIdx", orphanRemoval = true)
     private List<LocationEntity> locations = new ArrayList<>();
 }

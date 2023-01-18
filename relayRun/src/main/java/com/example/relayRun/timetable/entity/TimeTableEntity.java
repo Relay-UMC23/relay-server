@@ -1,11 +1,11 @@
 package com.example.relayRun.timetable.entity;
 
-import com.example.relayRun.group.entity.MemberStatusEntity;
+import com.example.relayRun.club.entity.MemberStatusEntity;
 import com.example.relayRun.util.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
 
@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicInsert
 @Table(name = "TimeTable")
 public class TimeTableEntity extends BaseTimeEntity {
 
