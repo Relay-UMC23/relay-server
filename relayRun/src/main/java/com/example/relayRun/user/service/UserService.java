@@ -56,6 +56,7 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.PASSWORD_ENCRYPTION_ERROR);
         }
         UserEntity userEntity = UserEntity.builder()
+                .name(user.getName())
                 .email(user.getEmail())
                 .pwd(user.getPwd())
                 .role(Role.ROLE_USER)
