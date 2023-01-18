@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@Table(name = "Club")
+@Table(name = "club")
 public class ClubEntity extends BaseTimeEntity {
 
     @Id

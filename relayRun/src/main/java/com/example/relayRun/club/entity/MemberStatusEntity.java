@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@Table(name = "MemberStatus")
+@Table(name = "member_status")
 public class MemberStatusEntity extends BaseTimeEntity {
 
     @Id
