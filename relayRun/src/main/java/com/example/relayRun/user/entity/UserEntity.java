@@ -36,7 +36,7 @@ public class UserEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
-    @Column(name = "loginType", columnDefinition = "varchar(10) default 'BASIC'")
+    @Column(name = "loginType")
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
@@ -48,10 +48,11 @@ public class UserEntity extends BaseTimeEntity {
     private Role role;
 
     @Builder
-    public UserEntity(String name, String email, String pwd, String status, Role role){
+    public UserEntity(String name, String email, String pwd, LoginType loginType, String status, Role role){
             this.name = name;
             this.email = email;
             this.pwd = pwd;
+            this.loginType = loginType;
             this.status = status;
             this.role = role;
         }

@@ -4,7 +4,9 @@ import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
+import com.example.relayRun.user.dto.PostLoginReq;
 import com.example.relayRun.user.dto.PostUserReq;
+import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
@@ -15,6 +17,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 import static com.example.relayRun.util.ValidationRegex.isRegexEmail;
 
@@ -38,6 +42,7 @@ public class UserService {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
 
+    // 회원가입
     public TokenDto signIn(PostUserReq user) throws BaseException {
         if(user.getEmail() == null || user.getPwd() == null){
             throw new BaseException(BaseResponseStatus.POST_USERS_EMPTY);
@@ -59,6 +64,7 @@ public class UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .pwd(user.getPwd())
+                .loginType(LoginType.BASIC)
                 .role(Role.ROLE_USER)
                 .build();
         user.setPwd(password);
@@ -67,10 +73,53 @@ public class UserService {
 
     }
 
+    // 로그인
+    public TokenDto logIn(PostLoginReq user) throws BaseException {
+        if(!isRegexEmail(user.getEmail())){
+            throw new BaseException(BaseResponseStatus.POST_USERS_INVALID_EMAIL);
+        }
+        // 이메일 DB에서 확인
+        Optional<UserEntity> optional = userRepository.findByEmail(user.getEmail());
+        if(optional.isEmpty()){
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        else{
+            // 소셜 타입 확인
+            UserEntity userEntity = optional.get();
+            if(!userEntity.getLoginType().equals("BASIC")){
+                throw new BaseException(BaseResponseStatus.SOCIAL);
+            }
+            // 입력받은 pwd와 entity pwd와 비교
+            if(passwordEncoder.matches(user.getPwd(), userEntity.getPwd())) {
+                return loginToken(user);
+            }else{
+                throw new BaseException(BaseResponseStatus.POST_USERS_INVALID_PASSWORD);
+            }
+
+        }
+    }
+
     public boolean isHaveEmail(String email) { return this.userRepository.existsByEmail(email); }
 
 
     public TokenDto token(PostUserReq user){
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPwd());
+        // 2. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
+        //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        // 3. 인증 정보를 기반으로 JWT 토큰 생성
+        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        // 4. RefreshToken 저장
+        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
+                .key(authentication.getName())
+                .value(tokenDto.getRefreshToken())
+                .build();
+        refreshTokenRepository.save(refreshToken);
+        // 5. 토큰 발급
+        return tokenDto;
+    }
+
+    public TokenDto loginToken(PostLoginReq user){
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPwd());
         // 2. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
         //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
