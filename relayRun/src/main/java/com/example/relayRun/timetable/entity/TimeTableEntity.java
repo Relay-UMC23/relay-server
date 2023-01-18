@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@Table(name = "TimeTable")
+@Table(name = "time_table")
 public class TimeTableEntity extends BaseTimeEntity {
 
     @Id
