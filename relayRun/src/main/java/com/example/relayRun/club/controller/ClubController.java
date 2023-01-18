@@ -1,5 +1,6 @@
 package com.example.relayRun.club.controller;
 
+import com.example.relayRun.club.dto.GetClubListRes;
 import com.example.relayRun.club.service.ClubService;
 import com.example.relayRun.club.dto.ClubDTO;
 import com.example.relayRun.util.BaseException;
@@ -23,9 +24,9 @@ public class ClubController {
     @ApiOperation(value="그룹 목록 조회(전체, 검색)", notes="URI 뒤에 search parameter로 그룹 이름을 검색할 수 있다. 아무것도 넘기지 않을 경우 전체 목록이 조회된다.")
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<List<ClubDTO.ClubList>> getClubs(@RequestParam(required = false) String search) {
+    public BaseResponse<List<GetClubListRes>> getClubs(@RequestParam(required = false) String search) {
         try {
-            List<ClubDTO.ClubList> clubList;
+            List<GetClubListRes> clubList;
             if(search == null) {
                 clubList = clubService.getClubs();
             } else {
