@@ -10,5 +10,9 @@ import java.util.List;
 
 @Repository
 public interface ClubRepository extends JpaRepository <ClubEntity, Long> {
+<<<<<<< HEAD
     List<GetClubListRes> findByOrderByRecruitStatusDesc();
+=======
+    List<ClubEntity> findAll();
+>>>>>>> fa8fdca78e3f58b8b77819092bf35c5d0febcd06
 }

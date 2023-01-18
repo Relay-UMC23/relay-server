@@ -13,7 +13,6 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @DynamicInsert
 @Table(name = "club")
 public class ClubEntity extends BaseTimeEntity {
@@ -68,5 +67,4 @@ public class ClubEntity extends BaseTimeEntity {
         this.goalType = goalType;
         this.goal = goal;
     }
-
 }
