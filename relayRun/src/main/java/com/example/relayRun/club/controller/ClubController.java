@@ -1,5 +1,6 @@
 package com.example.relayRun.club.controller;
 
+import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.service.ClubService;
 import com.example.relayRun.club.dto.ClubDTO;
 import com.example.relayRun.util.BaseException;
@@ -23,9 +24,9 @@ public class ClubController {
 
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<List<ClubDTO.ClubList>> getClubs() {
+    public BaseResponse<List<ClubEntity>> getClubs() {
         try {
-            List<ClubDTO.ClubList> clubList = clubService.getClubs();
+            List<ClubEntity> clubList = clubService.getClubs();
             return new BaseResponse<>(clubList);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());

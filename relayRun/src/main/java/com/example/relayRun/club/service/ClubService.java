@@ -1,5 +1,6 @@
 package com.example.relayRun.club.service;
 
+import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.repository.ClubRepository;
 import com.example.relayRun.club.dto.ClubDTO;
 import com.example.relayRun.util.BaseException;
@@ -16,9 +17,9 @@ public class ClubService {
         this.clubRepository = clubRepository;
     }
 
-    public List<ClubDTO.ClubList> getClubs() throws BaseException {
+    public List<ClubEntity> getClubs() throws BaseException {
         try {
-            List<ClubDTO.ClubList> clubList = clubRepository.findByOrderByRecruitStatusDesc();
+            List<ClubEntity> clubList = clubRepository.findByOrderByRecruitStatusDesc();
             return clubList;
         } catch (Exception e) {
             System.out.println(e);
