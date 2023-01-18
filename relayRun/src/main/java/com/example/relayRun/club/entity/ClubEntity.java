@@ -27,7 +27,7 @@ public class ClubEntity extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private String content;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(columnDefinition = "text")
     private String imgURL;
 
     @OneToOne
@@ -47,7 +47,7 @@ public class ClubEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private GoalType goalType;
 
-    @Column(nullable = false)
+    @Column()
     private Float goal;
 
     @Column(columnDefinition = "varchar(10) default 'recruiting'")
