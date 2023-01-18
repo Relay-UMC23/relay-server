@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @ApiOperation(value = "회원가입", notes ="body : name, email, pwd")
+    @ApiOperation(value = "회원가입", notes ="body값에 name, email, pwd 넣어주세요")
     @PostMapping("/sign-in")
     public BaseResponse<TokenDto> signIn(@RequestBody PostUserReq user) {
         try {
@@ -32,14 +32,10 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
     }
 
     @ResponseBody
+    @ApiOperation(value = "로그인", notes ="bearer Token에 access Token 넣어주세요!")
     @PostMapping("/logIn")
     public BaseResponse<TokenDto> logIn(@RequestBody PostLoginReq user) {
         if (user.getEmail().length() == 0 || user.getEmail() == null) {
@@ -52,23 +48,5 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
-<<<<<<< HEAD
-=======
->>>>>>> main
-    }
-
-//    @ResponseBody
-//    @PostMapping("/logIn")
-//    public BaseResponse<TokenDto> logIn(@RequestBody PostUserReq user) {
-//        if (user.getEmail().length() == 0 || user.getEmail() == null ) {
-//            return new BaseResponse<>(BaseResponseStatus.POST_USERS_EMPTY_EMAIL);
-//        }
-//        try{
-//            TokenDto token = this.userService.logIn(user);
-//        }
-//    }
-=======
->>>>>>> daa092d5fa22fed402c8e01b4b9d35f0f45fb301
-
     }
 }
