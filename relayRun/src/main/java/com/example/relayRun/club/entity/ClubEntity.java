@@ -43,11 +43,11 @@ public class ClubEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer level;
 
-    @Column(name = "goalType", nullable = false)
+    @Column(name = "goalType", nullable = false, columnDefinition = "integer default 0")
     @Enumerated(EnumType.STRING)
     private GoalType goalType;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Float goal;
 
     @Column(columnDefinition = "varchar(10) default 'recruiting'")
