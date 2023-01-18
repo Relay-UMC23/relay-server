@@ -30,6 +30,7 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
+
     }
 
     @ResponseBody
@@ -45,5 +46,6 @@ public class UserController {
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
+
     }
 }

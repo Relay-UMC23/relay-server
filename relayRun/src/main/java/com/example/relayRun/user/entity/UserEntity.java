@@ -49,6 +49,7 @@ public class UserEntity extends BaseTimeEntity {
 
     @Builder
     public UserEntity(String name, String email, String pwd, LoginType loginType, String status, Role role){
+
             this.name = name;
             this.email = email;
             this.pwd = pwd;
