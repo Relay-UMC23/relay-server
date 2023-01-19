@@ -37,7 +37,7 @@ public enum BaseResponseStatus {
     /*
      * 7000 : PATCH
      * */
-
+    PATCH_PASSWORD_CHECK_WRONG(false, 7000, "비밀번호 확인란을 다시 확인해주세요."),
     /*
      * 8000 : delete
      * */
