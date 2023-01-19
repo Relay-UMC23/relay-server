@@ -1,6 +1,7 @@
 package com.example.relayRun.club.service;
 
 import com.example.relayRun.club.dto.PostClubReq;
+import com.example.relayRun.club.dto.GetClubListRes;
 import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.repository.ClubRepository;
 import com.example.relayRun.user.entity.UserEntity;
@@ -44,8 +45,6 @@ public class ClubService {
             System.out.println(e);
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
-    }
-
     }
 
     // 그룹 생성
