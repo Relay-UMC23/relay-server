@@ -56,5 +56,15 @@ public class ClubEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
-
+    @Builder
+    public ClubEntity(Long clubIdx, String name, String content, UserProfileEntity hostIdx,
+                      Integer level, GoalType goalType, Float goal){
+        this.clubIdx = clubIdx;
+        this.name = name;
+        this.content = content;
+        this.hostIdx = hostIdx;
+        this.level = level;
+        this.goalType = goalType;
+        this.goal = goal;
+    }
 }

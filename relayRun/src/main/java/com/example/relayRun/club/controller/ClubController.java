@@ -2,7 +2,6 @@ package com.example.relayRun.club.controller;
 
 import com.example.relayRun.club.dto.GetClubListRes;
 import com.example.relayRun.club.service.ClubService;
-import com.example.relayRun.club.dto.ClubDTO;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
 import io.swagger.annotations.ApiOperation;
