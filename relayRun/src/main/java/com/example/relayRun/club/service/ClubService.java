@@ -13,68 +13,59 @@ import com.example.relayRun.util.BaseResponseStatus;
 import com.example.relayRun.util.GoalType;
 import org.springframework.stereotype.Service;
 
-<<<<<<< HEAD
+
 import java.security.Principal;
-=======
-import java.util.ArrayList;
->>>>>>> fa8fdca78e3f58b8b77819092bf35c5d0febcd06
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ClubService {
-    private ClubRepository clubRepository;
-    private UserRepository userRepository;
-    private UserProfileRepository userProfileRepository;
+    private final ClubRepository clubRepository;
+    private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
 
-    public ClubService(ClubRepository clubRepository) {
+    public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository) {
+
         this.clubRepository = clubRepository;
+        this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
     }
 
-<<<<<<< HEAD
     public List<GetClubListRes> getClubs() throws BaseException {
         try {
             List<GetClubListRes> clubList = clubRepository.findByOrderByRecruitStatusDesc();
-=======
-    public List<ClubDTO.ClubList> getClubs() throws BaseException {
-        try {
-            List<ClubEntity> clubs = clubRepository.findAll();
-            List<ClubDTO.ClubList> clubList = new ArrayList<>();
-
-            for (ClubEntity c : clubs) {
-                ClubDTO.ClubList club = new ClubDTO.ClubList();
-                club.setClubIdx(c.getClubIdx());
-                club.setContent(c.getContent());
-                club.setName(c.getName());
-                club.setImgURL(c.getImgURL());
-                club.setRecruitStatus(c.getRecruitStatus());
-                clubList.add(club);
-            }
->>>>>>> fa8fdca78e3f58b8b77819092bf35c5d0febcd06
             return clubList;
 
         } catch (Exception e) {
-            System.out.println(e);
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
 
     }
 
     // 그룹 생성
-    public void makesClub(Principal principal, PostClubReq club) throws BaseException {
-        try {
-            Optional<UserEntity> userEntity = userRepository.findByEmail(principal.getName());
-            Long userIdx = userEntity.get().getUserIdx();
-            Optional<UserProfileEntity> user = userProfileRepository.findByUserIdx(userIdx);
-            ClubEntity clubEntity = ClubEntity.builder()
-                    .name(club.getName())
-                    .content(club.getContent())
-                    .hostIdx(user.get())
-                    .level(club.getLevel())
-                    .goalType(GoalType.NOGOAL)
-                    .goal(club.getGoal())
-                    .build();
-            clubRepository.save(clubEntity);
+    public void makesClub(Principal principal, Long userProfileIdx, PostClubReq club) throws BaseException {
+        // 로그인한 유저 userIdx 가져오기
+        Optional<UserEntity> userEntity = this.userRepository.findByEmail(principal.getName());
+        UserEntity userIdx = userEntity.get();
+        // principal의 userIdx랑 userProfileIdx의 userIdx 가 같다면
+        Optional<UserProfileEntity> findUserEntity = userProfileRepository.findUserIdxByUserProfileIdx(userProfileIdx);
+        UserEntity findUserIdx = findUserEntity.get().getUserIdx();
+
+            Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
+        try {    if (userIdx.equals(findUserIdx)) {
+                ClubEntity clubEntity = ClubEntity.builder()
+                        .name(club.getName())
+                        .content(club.getContent())
+                        .hostIdx(userProfile.get())
+                        .level(club.getLevel())
+                        .goalType(GoalType.NOGOAL)
+                        .goal(club.getGoal())
+                        .build();
+                clubRepository.save(clubEntity);
+            }
+            else {
+                throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EMPTY);
+            }
         } catch (Exception e){
             System.out.println(e);
             throw new BaseException(BaseResponseStatus.POST_CLUBS_FAIL);
