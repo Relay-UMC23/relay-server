@@ -57,14 +57,18 @@ public class ClubEntity extends BaseTimeEntity {
     private String status;
 
     @Builder
-    public ClubEntity(Long clubIdx, String name, String content, UserProfileEntity hostIdx,
-                      Integer level, GoalType goalType, Float goal){
+    public ClubEntity(Long clubIdx, String name, String content, String imgURL, UserProfileEntity hostIdx,
+                      Integer maxNum, Integer level, GoalType goalType, Float goal, String recruitStatus, String status){
         this.clubIdx = clubIdx;
         this.name = name;
         this.content = content;
+        this.imgURL = imgURL;
         this.hostIdx = hostIdx;
+        this.maxNum = maxNum;
         this.level = level;
         this.goalType = goalType;
         this.goal = goal;
+        this.recruitStatus = recruitStatus;
+        this.status = status;
     }
 }
