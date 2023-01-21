@@ -56,7 +56,6 @@ public class UserEntity extends BaseTimeEntity {
             this.status = status;
             this.role = role;
         }
-
     public void changePwd(String pwd){
         this.pwd = pwd;
         }

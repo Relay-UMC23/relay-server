@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @ApiOperation(value = "로그인", notes ="")
+    @ApiOperation(value = "로그인", notes ="bearer Token에 access Token 넣어주세요!")
     @PostMapping("/logIn")
     public BaseResponse<TokenDto> logIn(@RequestBody PostLoginReq user) {
         if (user.getEmail().length() == 0 || user.getEmail() == null) {
@@ -63,7 +63,6 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
-
     @ResponseBody
     @ApiOperation(value = "비밀번호 변경", notes ="헤더에 access token 담아주세용 비밀번호 validation 규칙은 8글자 이상 16글자 이하, 문자 + 숫자 섞어서입니다!")
     @PatchMapping("/pwd")
