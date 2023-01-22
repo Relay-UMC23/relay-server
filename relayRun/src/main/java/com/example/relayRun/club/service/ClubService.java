@@ -23,7 +23,7 @@ public class ClubService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
 
-    public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository) {
+    public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository) throws BaseException {
 
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
@@ -82,7 +82,6 @@ public class ClubService {
                             .build();
                     clubRepository.save(clubEntity);
                 }
-
             else {
                 throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
             }
