@@ -64,7 +64,8 @@ public class UserController {
         }
     }
     @ResponseBody
-    @ApiOperation(value = "비밀번호 변경", notes ="헤더에 access token 담아주세용 비밀번호 validation 규칙은 8글자 이상 16글자 이하, 문자 + 숫자 섞어서입니다!")
+    @ApiOperation(value = "비밀번호 변경", notes ="헤더에 access token 담아주세용" +
+            " 비밀번호 validation 규칙은 8글자 이상 16글자 이하, 문자 + 숫자 섞어서입니다!")
     @PatchMapping("/pwd")
     public BaseResponse<String> changePwd(Principal principal, @RequestBody PatchUserPwdReq userPwd) {
         try {

@@ -19,12 +19,15 @@ import java.util.Optional;
 
 @Service
 public class ClubService {
-    private ClubRepository clubRepository;
-    private UserRepository userRepository;
-    private UserProfileRepository userProfileRepository;
+    private final ClubRepository clubRepository;
+    private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
 
-    public ClubService(ClubRepository clubRepository) {
+    public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository) {
+
         this.clubRepository = clubRepository;
+        this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
     }
 
     public List<GetClubListRes> getClubs() throws BaseException {
@@ -32,7 +35,6 @@ public class ClubService {
             List<GetClubListRes> clubList = clubRepository.findByOrderByRecruitStatusDesc();
             return clubList;
         } catch (Exception e) {
-            System.out.println(e);
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
@@ -48,23 +50,59 @@ public class ClubService {
     }
 
     // 그룹 생성
-    public void makesClub(Principal principal, PostClubReq club) throws BaseException {
-        try {
-            Optional<UserEntity> userEntity = userRepository.findByEmail(principal.getName());
-            Long userIdx = userEntity.get().getUserIdx();
-            Optional<UserProfileEntity> user = userProfileRepository.findByUserIdx(userIdx);
-            ClubEntity clubEntity = ClubEntity.builder()
-                    .name(club.getName())
-                    .content(club.getContent())
-                    .hostIdx(user.get())
-                    .level(club.getLevel())
-                    .goalType(GoalType.NOGOAL)
-                    .goal(club.getGoal())
-                    .build();
-            clubRepository.save(clubEntity);
-        } catch (Exception e){
-            System.out.println(e);
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_FAIL);
+    public void makesClub(Principal principal, Long userProfileIdx, PostClubReq club) throws BaseException {
+        // 로그인한 유저 userIdx 가져오기
+        Optional<UserEntity> optional = userRepository.findByEmail(principal.getName());
+        if(optional.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
+        UserEntity userIdx = optional.get();
+        // principal의 userIdx랑 userProfileIdx의 userIdx 가 같다면
+        Optional<UserProfileEntity> profileOptional = userProfileRepository.findByUserProfileIdx(userProfileIdx);
+        if(profileOptional.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EMPTY);
+        }
+        if(club.getName().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
+        }
+        if(club.getContent().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
+        }
+        if(club.getLevel()==null || club.getLevel().toString().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_CLUBS_LEVEL_EMPTY);
+        }
+        UserProfileEntity userProfile = profileOptional.get();
+            if (userIdx.getUserIdx().equals(userProfile.getUserIdx().getUserIdx())) {
+                if(club.getGoalType() == null || club.getGoalType().toString().isEmpty()) {
+                    ClubEntity clubEntity = ClubEntity.builder()
+                            .name(club.getName())
+                            .content(club.getContent())
+                            .imgURL(club.getImgURL())
+                            .hostIdx(userProfile)
+                            .maxNum(club.getMaxNum())
+                            .level(club.getLevel())
+                            .goalType(GoalType.NOGOAL)
+                            .goal(club.getGoal())
+                            .build();
+                    clubRepository.save(clubEntity);
+                }
+                else{
+                    ClubEntity clubEntity = ClubEntity.builder()
+                            .name(club.getName())
+                            .content(club.getContent())
+                            .imgURL(club.getImgURL())
+                            .hostIdx(userProfile)
+                            .maxNum(club.getMaxNum())
+                            .level(club.getLevel())
+                            .goalType(club.getGoalType())
+                            .goal(club.getGoal())
+                            .build();
+                    clubRepository.save(clubEntity);
+                }
+
+            }
+            else {
+                throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
+            }
     }
 }
