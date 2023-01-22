@@ -3,9 +3,10 @@ package com.example.relayRun.user.controller;
 
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.user.dto.GetUserRes;
-import com.example.relayRun.user.dto.PatchUserPwdReq;
+import com.example.relayRun.user.dto.GetUserProfileClubRes;
 import com.example.relayRun.user.dto.PostLoginReq;
 import com.example.relayRun.user.dto.PostUserReq;
+import com.example.relayRun.user.service.UserProfileService;
 import com.example.relayRun.user.service.UserService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
@@ -20,13 +21,15 @@ import java.security.Principal;
 public class UserController {
 
     private UserService userService;
+    private UserProfileService userProfileService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserProfileService userProfileService) {
         this.userService = userService;
+        this.userProfileService = userProfileService;
     }
 
     @ResponseBody
-    @ApiOperation(value = "회원가입", notes ="비밀번호 validation 규칙은 8글자 이상 16글자 이하, 문자 + 숫자 섞어서입니다!")
+    @ApiOperation(value = "회원가입", notes ="body값에 name, email, pwd 넣어주세요")
     @PostMapping("/sign-in")
     public BaseResponse<TokenDto> signIn(@RequestBody PostUserReq user) {
         try {
@@ -63,16 +66,14 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
-    @ResponseBody
-    @ApiOperation(value = "비밀번호 변경", notes ="헤더에 access token 담아주세용" +
-            " 비밀번호 validation 규칙은 8글자 이상 16글자 이하, 문자 + 숫자 섞어서입니다!")
-    @PatchMapping("/pwd")
-    public BaseResponse<String> changePwd(Principal principal, @RequestBody PatchUserPwdReq userPwd) {
-        try {
-            this.userService.changePwd(principal, userPwd);
-            return new BaseResponse<>("비밀번호 변경에 성공하였습니다.");
 
-        } catch (BaseException e) {
+    @ApiOperation(value = "속한 그룹의 이름 가져오기", notes ="profile의 id를 query string으로 전달 해주세요")
+    @GetMapping("/clubs/accepted")
+    public BaseResponse<GetUserProfileClubRes> getUsersClub(@RequestParam("id") Long userProfileIdx) {
+        try{
+            GetUserProfileClubRes result = userProfileService.getUserProfileClub(userProfileIdx);
+            return new BaseResponse<>(result);
+        }catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }

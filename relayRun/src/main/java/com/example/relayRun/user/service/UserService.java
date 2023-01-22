@@ -1,18 +1,17 @@
 package com.example.relayRun.user.service;
 
+import com.example.relayRun.club.repository.ClubRepository;
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
 import com.example.relayRun.user.dto.GetUserRes;
-import com.example.relayRun.user.dto.PatchUserPwdReq;
 import com.example.relayRun.user.dto.PostLoginReq;
 import com.example.relayRun.user.dto.PostUserReq;
 import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
-import com.example.relayRun.util.BaseResponse;
 import com.example.relayRun.util.BaseResponseStatus;
 import com.example.relayRun.util.Role;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +24,6 @@ import java.security.Principal;
 import java.util.Optional;
 
 import static com.example.relayRun.util.ValidationRegex.isRegexEmail;
-import static com.example.relayRun.util.ValidationRegex.isRegexPwd;
 
 @Service
 public class UserService {
@@ -34,8 +32,6 @@ public class UserService {
     private TokenProvider tokenProvider;
     private RefreshTokenRepository refreshTokenRepository;
     private AuthenticationManagerBuilder authenticationManagerBuilder;
-
-
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        TokenProvider tokenProvider, RefreshTokenRepository refreshTokenRepository,
@@ -59,9 +55,6 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.DUPLICATE_EMAIL);
         }
         String password = user.getPwd();
-        if(!isRegexPwd(password)){
-            throw new BaseException(BaseResponseStatus.POST_USERS_INVALID_PWD);
-        }
         try{
             String encodedPwd = passwordEncoder.encode(user.getPwd());
             user.setPwd(encodedPwd);
@@ -187,36 +180,5 @@ public class UserService {
         return result;
     }
 
-    public void changePwd(Principal principal, PatchUserPwdReq user) throws BaseException {
-        Optional<UserEntity> optional = userRepository.findByEmail(principal.getName());
-        if(optional.isEmpty()){
-            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
-        }
-        if(user.getNewPwd().length() == 0 || user.getNewPwd() == null){
-            throw new BaseException(BaseResponseStatus.POST_USERS_EMPTY);
-        }
-
-        UserEntity userEntity = optional.get();
-        if(!user.getNewPwd().equals(user.getNewPwdCheck())){
-            throw new BaseException(BaseResponseStatus.PATCH_PASSWORD_CHECK_WRONG);
-        }
-
-        if(!userEntity.getLoginType().equals(LoginType.BASIC)){
-            throw new BaseException(BaseResponseStatus.SOCIAL);
-        }
-        if(!isRegexPwd(user.getNewPwd())){
-            throw new BaseException(BaseResponseStatus.POST_USERS_INVALID_PWD);
-        }
-
-        // 새 비밀번호 encryption
-        String encodedPwd;
-        try{
-            encodedPwd = passwordEncoder.encode(user.getNewPwd());
-        }catch (Exception e){
-            throw new BaseException(BaseResponseStatus.PASSWORD_ENCRYPTION_ERROR);
-        }
-        userEntity.changePwd(encodedPwd);
-        userRepository.save(userEntity);
-    }
 }
 
