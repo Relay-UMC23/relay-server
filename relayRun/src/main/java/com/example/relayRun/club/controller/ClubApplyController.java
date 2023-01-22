@@ -1,14 +1,12 @@
 package com.example.relayRun.club.controller;
 
 import com.example.relayRun.club.dto.PostClubReq;
-import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.service.ClubService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/clubs/apply")

@@ -4,7 +4,6 @@ import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.entity.MemberStatusEntity;
 import com.example.relayRun.club.repository.MemberStatusRepository;
 import com.example.relayRun.user.dto.GetUserProfileClubRes;
-import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.stereotype.Service;
