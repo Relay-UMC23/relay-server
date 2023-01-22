@@ -68,25 +68,8 @@ public class ClubService {
         if(club.getContent().isEmpty()) {
             throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
         }
-        if(club.getLevel()==null || club.getLevel().toString().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_LEVEL_EMPTY);
-        }
         UserProfileEntity userProfile = profileOptional.get();
             if (userIdx.getUserIdx().equals(userProfile.getUserIdx().getUserIdx())) {
-                if(club.getGoalType() == null || club.getGoalType().toString().isEmpty()) {
-                    ClubEntity clubEntity = ClubEntity.builder()
-                            .name(club.getName())
-                            .content(club.getContent())
-                            .imgURL(club.getImgURL())
-                            .hostIdx(userProfile)
-                            .maxNum(club.getMaxNum())
-                            .level(club.getLevel())
-                            .goalType(GoalType.NOGOAL)
-                            .goal(club.getGoal())
-                            .build();
-                    clubRepository.save(clubEntity);
-                }
-                else{
                     ClubEntity clubEntity = ClubEntity.builder()
                             .name(club.getName())
                             .content(club.getContent())
@@ -98,8 +81,6 @@ public class ClubService {
                             .goal(club.getGoal())
                             .build();
                     clubRepository.save(clubEntity);
-                }
-
             }
             else {
                 throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
