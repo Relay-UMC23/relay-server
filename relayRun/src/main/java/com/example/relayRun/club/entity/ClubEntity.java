@@ -40,7 +40,7 @@ public class ClubEntity extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "integer default 8")
     private Integer maxNum;
 
-    @Column(nullable = false, columnDefinition = "integer defalut 0")
+    @Column(nullable = false, columnDefinition = "integer default 0")
     private Integer level;
 
     @Column(name = "goalType", nullable = false)
