@@ -40,12 +40,12 @@ public class ClubEntity extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "integer default 8")
     private Integer maxNum;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "integer defalut 0")
     private Integer level;
 
     @Column(name = "goalType", nullable = false)
     @Enumerated(EnumType.STRING)
-    private GoalType goalType;
+    private GoalType goalType = GoalType.NOGOAL;
 
     @Column()
     private Float goal;
