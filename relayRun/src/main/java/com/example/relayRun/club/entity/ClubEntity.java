@@ -31,7 +31,7 @@ public class ClubEntity extends BaseTimeEntity {
     private String imgURL;
 
     @OneToOne
-    @JoinColumn(name = "userIdx")
+    @JoinColumn(name = "userProfileIdx")
     private UserProfileEntity hostIdx;
 
     @Column(nullable = false, columnDefinition = "varchar(1) default 'Y'")
