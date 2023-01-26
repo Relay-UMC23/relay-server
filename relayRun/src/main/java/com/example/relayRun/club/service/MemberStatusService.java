@@ -15,7 +15,7 @@ import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -102,7 +102,7 @@ public class MemberStatusService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<GetTimeTableListRes> getTimeTables(Long clubIdx) throws BaseException {
         try {
             //1. clubIdx로 memberStatus 조회
@@ -144,6 +144,7 @@ public class MemberStatusService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<GetTimeTableListRes> getUserTimeTable(Long userProfileIdx) throws BaseException {
         try {
             //memberStatusIdx 찾기
