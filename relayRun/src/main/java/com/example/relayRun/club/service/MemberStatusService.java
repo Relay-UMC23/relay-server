@@ -11,7 +11,6 @@ import com.example.relayRun.club.repository.MemberStatusRepository;
 import com.example.relayRun.club.repository.TimeTableRepository;
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.user.repository.UserProfileRepository;
-import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.stereotype.Service;
@@ -143,4 +142,35 @@ public class MemberStatusService {
         }
     }
 
+    public List<GetTimeTableListRes> getUserTimeTable(Long userProfileIdx) throws BaseException {
+        try {
+            //memberStatusIdx 찾기
+            List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(userProfileIdx);
+            if(memberStatusEntityList.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+            }
+            Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
+
+            //memberStatusIdx로 시간표 조회
+            List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
+
+            List<GetTimeTableListRes> timeTableList = new ArrayList<>();
+
+            for(TimeTableEntity timeTableEntity : timeTableEntityList) {
+                GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
+                        .timeTableIdx(timeTableEntity.getTimeTableIdx())
+                        .day(timeTableEntity.getDay())
+                        .start(timeTableEntity.getStart())
+                        .end(timeTableEntity.getEnd())
+                        .goal(timeTableEntity.getGoal())
+                        .goalType(timeTableEntity.getGoalType())
+                        .build();
+
+                timeTableList.add(timeTable);
+            }
+            return timeTableList;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 }

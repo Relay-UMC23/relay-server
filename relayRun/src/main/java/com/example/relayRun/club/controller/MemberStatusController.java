@@ -13,7 +13,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/clubs/member-status")
+@RequestMapping(value = "/clubs/clubs")
 public class MemberStatusController {
 
     private final MemberStatusService memberStatusService;
@@ -37,9 +37,21 @@ public class MemberStatusController {
     @ResponseBody
     @GetMapping("/{clubIdx}")
     @ApiOperation(value = "그룹의 전체 시간표 조회", notes = "path variable로 조회하고자 하는 그룹의 clubIdx를 보내면 해당 그룹의 전체 시간표를 리스트 형식으로 반환합니다.")
-    public BaseResponse<List<GetTimeTableListRes>> getTimeTables(@ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx) {
+    public BaseResponse<List<GetTimeTableListRes>> getAllTimeTables(@ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx) {
         try {
             List<GetTimeTableListRes> timeTableList = memberStatusService.getTimeTables(clubIdx);
+            return new BaseResponse<>(timeTableList);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/member-status/{userProfileIdx}")
+    @ApiOperation(value = "개인 시간표 조회", notes = "path variable로 조회하고자 하는 유저의 userProfileIdx를 보내면 해당 유저의 시간표를 리스트 형식으로 반환합니다.")
+    public BaseResponse<List<GetTimeTableListRes>> getUserTimeTable(@ApiParam(value = "조회하고자 하는 유저의 userProfileIdx")@PathVariable Long userProfileIdx) {
+        try {
+            List<GetTimeTableListRes> timeTableList = memberStatusService.getUserTimeTable(userProfileIdx);
             return new BaseResponse<>(timeTableList);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
