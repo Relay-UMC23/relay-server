@@ -117,17 +117,25 @@ public class MemberStatusService {
             }
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
+            //formatter 정의
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
             //2. 해당 memberStatusIdx로 TimeTable 조회
             for(MemberStatusEntity memberStatus : memberStatusEntityList) {
                 List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatus.getMemberStatusIdx());
 
                 for(TimeTableEntity timeTableEntity : timeTableEntityList) {
+                    //local date time -> string으로 변환
+                    LocalDateTime startTime = timeTableEntity.getStart();
+                    LocalDateTime endTime = timeTableEntity.getEnd();
+                    String startStr = startTime.format(formatter);
+                    String endStr = endTime.format(formatter);
+
                     GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
                             .timeTableIdx(timeTableEntity.getTimeTableIdx())
                             .day(timeTableEntity.getDay())
-                            .start(timeTableEntity.getStart())
-                            .end(timeTableEntity.getEnd())
+                            .start(startStr)
+                            .end(endStr)
                             .goal(timeTableEntity.getGoal())
                             .goalType(timeTableEntity.getGoalType())
                             .build();
@@ -155,13 +163,21 @@ public class MemberStatusService {
             List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
+            //formatter 정의
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
             for(TimeTableEntity timeTableEntity : timeTableEntityList) {
+                //local date time -> string으로 변환
+                LocalDateTime startTime = timeTableEntity.getStart();
+                LocalDateTime endTime = timeTableEntity.getEnd();
+                String startStr = startTime.format(formatter);
+                String endStr = endTime.format(formatter);
+
                 GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
                         .timeTableIdx(timeTableEntity.getTimeTableIdx())
                         .day(timeTableEntity.getDay())
-                        .start(timeTableEntity.getStart())
-                        .end(timeTableEntity.getEnd())
+                        .start(startStr)
+                        .end(endStr)
                         .goal(timeTableEntity.getGoal())
                         .goalType(timeTableEntity.getGoalType())
                         .build();

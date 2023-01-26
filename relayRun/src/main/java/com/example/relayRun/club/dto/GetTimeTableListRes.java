@@ -19,10 +19,10 @@ public class GetTimeTableListRes {
     private Integer day;
 
     @ApiModelProperty(example = "시작 시간")
-    private LocalDateTime start;
+    private String start;
 
     @ApiModelProperty(example = "종료 시간")
-    private LocalDateTime end;
+    private String end;
 
     @ApiModelProperty(example = "목표 수치")
     private Float goal;
