@@ -74,18 +74,18 @@ public class MemberStatusService {
             //시간표 등록
             List<TimeTableDTO> timeTables = memberStatus.getTimeTables();
             //1. formatter 정의
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
             for (int i = 0; i < timeTables.size(); i++) {
                 //2. 입력으로 들어온 string -> local date time으로 변환
-                String startStr = timeTables.get(i).getStart();
-                String endStr = timeTables.get(i).getEnd();
-                LocalDateTime startTime = LocalDateTime.parse(startStr, formatter);
-                LocalDateTime endTime = LocalDateTime.parse(endStr, formatter);
+//                String startStr = timeTables.get(i).getStart();
+//                String endStr = timeTables.get(i).getEnd();
+//                LocalDateTime startTime = LocalDateTime.parse(startStr, formatter);
+//                LocalDateTime endTime = LocalDateTime.parse(endStr, formatter);
 
                 //3. 중복 시간표 비교
                 List<Long> duplicateTimeTableList = timeTableRepository.selectDuplicateTimeTable(clubIdx,
-                        timeTables.get(i).getDay(), startTime, endTime);
+                        timeTables.get(i).getDay(), timeTables.get(i).getStart(), timeTables.get(i).getEnd());
 
                 if(duplicateTimeTableList.size() > 0) {
                     throw new BaseException(BaseResponseStatus.DUPLICATE_TIMETABLE);
@@ -94,8 +94,8 @@ public class MemberStatusService {
                 TimeTableEntity timeTableEntity = TimeTableEntity.builder()
                         .memberStatusIdx(memberStatusEntity)
                         .day(timeTables.get(i).getDay())
-                        .start(startTime)
-                        .end(endTime)
+                        .start(timeTables.get(i).getStart())
+                        .end(timeTables.get(i).getEnd())
                         .goal(timeTables.get(i).getGoal())
                         .goalType(timeTables.get(i).getGoalType())
                         .build();
@@ -118,7 +118,7 @@ public class MemberStatusService {
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
             //formatter 정의
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
             //2. 해당 memberStatusIdx로 TimeTable 조회
             for(MemberStatusEntity memberStatus : memberStatusEntityList) {
@@ -126,16 +126,16 @@ public class MemberStatusService {
 
                 for(TimeTableEntity timeTableEntity : timeTableEntityList) {
                     //local date time -> string으로 변환
-                    LocalDateTime startTime = timeTableEntity.getStart();
-                    LocalDateTime endTime = timeTableEntity.getEnd();
-                    String startStr = startTime.format(formatter);
-                    String endStr = endTime.format(formatter);
+//                    LocalDateTime startTime = timeTableEntity.getStart();
+//                    LocalDateTime endTime = timeTableEntity.getEnd();
+//                    String startStr = startTime.format(formatter);
+//                    String endStr = endTime.format(formatter);
 
                     GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
                             .timeTableIdx(timeTableEntity.getTimeTableIdx())
                             .day(timeTableEntity.getDay())
-                            .start(startStr)
-                            .end(endStr)
+                            .start(timeTableEntity.getStart())
+                            .end(timeTableEntity.getEnd())
                             .goal(timeTableEntity.getGoal())
                             .goalType(timeTableEntity.getGoalType())
                             .build();
@@ -163,21 +163,13 @@ public class MemberStatusService {
             List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
-            //formatter 정의
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
             for(TimeTableEntity timeTableEntity : timeTableEntityList) {
-                //local date time -> string으로 변환
-                LocalDateTime startTime = timeTableEntity.getStart();
-                LocalDateTime endTime = timeTableEntity.getEnd();
-                String startStr = startTime.format(formatter);
-                String endStr = endTime.format(formatter);
-
                 GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
                         .timeTableIdx(timeTableEntity.getTimeTableIdx())
                         .day(timeTableEntity.getDay())
-                        .start(startStr)
-                        .end(endStr)
+                        .start(timeTableEntity.getStart())
+                        .end(timeTableEntity.getEnd())
                         .goal(timeTableEntity.getGoal())
                         .goalType(timeTableEntity.getGoalType())
                         .build();

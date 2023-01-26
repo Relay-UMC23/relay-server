@@ -1,6 +1,7 @@
 package com.example.relayRun.club.dto;
 
 import com.example.relayRun.util.GoalType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,11 +19,13 @@ public class GetTimeTableListRes {
     @ApiModelProperty(example = "요일")
     private Integer day;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(example = "시작 시간")
-    private String start;
+    private LocalDateTime start;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(example = "종료 시간")
-    private String end;
+    private LocalDateTime end;
 
     @ApiModelProperty(example = "목표 수치")
     private Float goal;
