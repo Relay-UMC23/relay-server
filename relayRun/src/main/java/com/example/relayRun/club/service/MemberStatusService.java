@@ -16,8 +16,6 @@ import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +44,6 @@ public class MemberStatusService {
             //신청 유저 정보
             Long userProfileIdx = memberStatus.getUserProfileIdx();
             Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
-
             if(userProfile.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
             }
@@ -58,7 +55,6 @@ public class MemberStatusService {
 
             //신청 대상 그룹 정보
             Optional<ClubEntity> club = clubRepository.findById(clubIdx);
-
             if(club.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.CLUB_EMPTY);
             }
@@ -86,7 +82,6 @@ public class MemberStatusService {
                 //3. 중복 시간표 비교
                 List<Long> duplicateTimeTableList = timeTableRepository.selectDuplicateTimeTable(clubIdx,
                         timeTables.get(i).getDay(), timeTables.get(i).getStart(), timeTables.get(i).getEnd());
-
                 if(duplicateTimeTableList.size() > 0) {
                     throw new BaseException(BaseResponseStatus.DUPLICATE_TIMETABLE);
                 }
@@ -143,7 +138,6 @@ public class MemberStatusService {
                     timeTableList.add(timeTable);
                 }
             }
-
             return timeTableList;
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
@@ -157,9 +151,9 @@ public class MemberStatusService {
             if(memberStatusEntityList.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
             }
-            Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
 
             //memberStatusIdx로 시간표 조회
+            Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
             List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
@@ -181,4 +175,27 @@ public class MemberStatusService {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
+
+//    public void updateUserTimeTable(Long userProfileIdx, TimeTableDTO timeTable) throws BaseException {
+//        try {
+//            //신청 유저 정보
+//            Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
+//            if(userProfile.isEmpty()) {
+//                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+//            }
+//
+//            List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(userProfileIdx);
+//            if(memberStatusEntityList.isEmpty()) {
+//                throw new BaseException(BaseResponseStatus.MEMBER_STATUS_EMPTY);
+//            }
+//
+//            //memberStatusIdx로 시간표 조회
+//            Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
+//            List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
+//
+//        } catch (Exception e) {
+//            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+//        }
+//    }
+
 }

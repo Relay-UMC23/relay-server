@@ -62,9 +62,9 @@ public class MemberStatusController {
 //    @ResponseBody
 //    @PatchMapping("/member-status/{userProfileIdx}")
 //    @ApiOperation(value = "개인 시간표 수정", notes = "path variable로 수정하고자 하는 유저의 userProfileIdx, body로는 시간표 정보를 리스트 형식으로 보내면 시간표 수정이 완료됩니다.")
-//    public BaseResponse<String> updateUserTimeTable(@ApiParam(value = "수정하고자 하는 유저의userProfileIdx") @PathVariable Long userProfileIdx, @ApiParam(value = "시간표 정보(리스트 형식)") @Valid @RequestBody List<TimeTableDTO> timeTables) {
+//    public BaseResponse<String> updateUserTimeTable(@ApiParam(value = "수정하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx, @ApiParam(value = "시간표 정보(리스트 형식)") @Valid @RequestBody TimeTableDTO timeTable) {
 //        try {
-//            memberStatusService
+//            memberStatusService.updateUserTimeTable(userProfileIdx, timeTable);
 //            return new BaseResponse<>("시간표 수정 완료");
 //        } catch (BaseException e) {
 //            return new BaseResponse<>(e.getStatus());
