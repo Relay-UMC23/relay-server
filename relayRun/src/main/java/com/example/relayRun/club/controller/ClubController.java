@@ -4,12 +4,14 @@ import com.example.relayRun.club.dto.GetClubListRes;
 import com.example.relayRun.club.service.ClubService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@Api(tags = {"그룹 목록 관련 API"})
 @RequestMapping(value = "/clubs")
 public class ClubController {
 

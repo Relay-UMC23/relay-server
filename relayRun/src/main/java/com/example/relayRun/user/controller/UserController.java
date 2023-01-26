@@ -63,6 +63,8 @@ public class UserController {
         }
     }
 
+
+    @ApiOperation(value = "유저 정보 받아오기", notes = "토큰 정보를 통해 해당 유저의 이메일과 이름을 받아옵니다")
     @GetMapping("/")
     public BaseResponse<GetUserRes> getInfo(Principal principal) {
         try{
@@ -93,8 +95,8 @@ public class UserController {
             @ApiResponse(code = 404, message = "서버 문제 발생"),
             @ApiResponse(code = 500, message = "페이지를 찾을 수 없습니다")
     })
-    @ApiOperation(value = "유저 프로필 목록 조회", notes ="유저가 생성한 프로필 리스트 조회하는 API" +
-            "Bearer Token에 access token 넣어주세요!")
+    @ApiOperation(value = "유저 프로필 목록 조회", notes ="유저가 생성한 프로필 리스트 조회하는 API\n" +
+            "헤더에 access token 넣어주세요!")
     @GetMapping("/profileList")
     public BaseResponse<List<GetProfileListRes>> viewProfile(Principal principal) {
         try{
