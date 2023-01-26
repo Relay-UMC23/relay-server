@@ -52,6 +52,11 @@ public class MemberStatusService {
                 throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
             }
 
+            List<MemberStatusEntity> validationList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(userProfileIdx);
+            if(!validationList.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.DUPLICATE_MEMBER_STATUS);
+            }
+
             //신청 대상 그룹 정보
             Optional<ClubEntity> club = clubRepository.findById(clubIdx);
 

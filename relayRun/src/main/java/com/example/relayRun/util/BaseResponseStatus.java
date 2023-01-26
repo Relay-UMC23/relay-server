@@ -40,7 +40,8 @@ public enum BaseResponseStatus {
     POST_USERS_INVALID_PWD(false, 5001, "비밀번호 양식이 맞지 않습니다."),
     POST_REVIEW_IMG_ERROR(false, 5001, "리뷰 이미지 에러입니다."),
 
-    USER_PROFILE_EMPTY(false, 4000, "유효하지 않은 유저 인덱스입니다."),
+    USER_PROFILE_EMPTY(false, 4000, "유효하지 않은 유저 프로필 인덱스입니다."),
+    DUPLICATE_MEMBER_STATUS(false, 4000, "이미 그룹에 존재하는 유저 프로필입니다."),
     CLUB_EMPTY(false, 4000, "유효하지 않은 그룹 인덱스입니다."),
     DUPLICATE_TIMETABLE(false, 4000, "중복된 시간표입니다."),
     POST_MEMBER_STATUS_FAIL(false, 4000, "그룹 신청에 실패하였습니다"),
