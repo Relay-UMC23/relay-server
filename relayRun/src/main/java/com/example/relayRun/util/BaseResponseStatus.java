@@ -39,8 +39,11 @@ public enum BaseResponseStatus {
     POST_USERS_INVALID_EMAIL(false, 5000, "이메일 양식이 맞지 않습니다."),
     POST_USERS_INVALID_PWD(false, 5001, "비밀번호 양식이 맞지 않습니다."),
     POST_REVIEW_IMG_ERROR(false, 5001, "리뷰 이미지 에러입니다."),
-    POST_TIMETABLE_FAIL(false, 4003, "시간표 등록에 실패하였습니다."),
-    POST_MEMBER_STATUS_FAIL(false, 4004, "그룹 신청에 실패하였습니다"),
+
+    USER_PROFILE_EMPTY(false, 4000, "유효하지 않은 유저 인덱스입니다."),
+    CLUB_EMPTY(false, 4000, "유효하지 않은 그룹 인덱스입니다."),
+    DUPLICATE_TIMETABLE(false, 4000, "중복된 시간표입니다."),
+    POST_MEMBER_STATUS_FAIL(false, 4000, "그룹 신청에 실패하였습니다"),
 
     SOCIAL(false, 5001, "소셜로 로그인을 진행한 이메일 입니다."),
     NOT_SOCIAL(false, 2001, "소셜이 로그인으로 진행한 이메일입니다."),

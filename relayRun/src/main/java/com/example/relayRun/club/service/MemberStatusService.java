@@ -28,18 +28,15 @@ public class MemberStatusService {
 
     private final MemberStatusRepository memberStatusRepository;
     private final TimeTableRepository timeTableRepository;
-    private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final ClubRepository clubRepository;
 
     public MemberStatusService(MemberStatusRepository memberStatusRepository,
                                TimeTableRepository timeTableRepository,
-                               UserRepository userRepository,
                                UserProfileRepository userProfileRepository,
                                ClubRepository clubRepository) {
         this.memberStatusRepository = memberStatusRepository;
         this.timeTableRepository = timeTableRepository;
-        this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.clubRepository = clubRepository;
     }
@@ -51,8 +48,16 @@ public class MemberStatusService {
             Long userProfileIdx = memberStatus.getUserProfileIdx();
             Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
 
+            if(userProfile.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+            }
+
             //신청 대상 그룹 정보
             Optional<ClubEntity> club = clubRepository.findById(clubIdx);
+
+            if(club.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.CLUB_EMPTY);
+            }
 
             //member_status 등록
             MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
@@ -79,7 +84,7 @@ public class MemberStatusService {
                         timeTables.get(i).getDay(), startTime, endTime);
 
                 if(duplicateTimeTableList.size() > 0) {
-                    throw new BaseException(BaseResponseStatus.POST_TIMETABLE_FAIL);
+                    throw new BaseException(BaseResponseStatus.DUPLICATE_TIMETABLE);
                 }
 
                 TimeTableEntity timeTableEntity = TimeTableEntity.builder()
@@ -94,7 +99,6 @@ public class MemberStatusService {
                 timeTableRepository.save(timeTableEntity);
             }
         } catch (Exception e) {
-            System.out.println(e);
             throw new BaseException(BaseResponseStatus.POST_MEMBER_STATUS_FAIL);
         }
     }
@@ -104,6 +108,9 @@ public class MemberStatusService {
         try {
             //1. clubIdx로 memberStatus 조회
             List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByClubIdx_ClubIdx(clubIdx);
+            if(memberStatusEntityList.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.CLUB_EMPTY);
+            }
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
 
