@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum BaseResponseStatus {
     SUCCESS(true, 1000, "요청에 성공하였습니다."),
+    EMPTY_TOKEN(false, 1001, "토큰을 제대로 입력해주세요."),
     DUPLICATE_NICKNAME(false, 2000, "닉네임이 중복되었습니다."),
     DUPLICATE_EMAIL(false, 2001, "이메일이 중복되었습니다."),
     EMPTY_JWT(false, 2002, "JWT를 입력해주세요."),
@@ -16,8 +17,11 @@ public enum BaseResponseStatus {
     FAILED_TO_SEARCH(false, 2008, "검색을 실패하였습니다."),
     FAILED_TO_FIND_URL(false, 2009,"요청할 수 없는 url입니다."),
 
-    // 달리기단
+    // 달리기단;
     RECORD_UNAVAILABLE(false, 2100,"존재하지 않는 기록입니다."),
+    INVALID_DATE_FORMAT(false, 2101, "yyyy-mm-dd의 날짜 형식을 입력해주세요."),
+
+    CLUB_UNAVAILABLE(false, 2200, "존재하지 않는 그룹입니다."),
 
     FAILED_TO_FIND_USER(false, 2010, "유효하지 않은 인증 코드입니다."),
     /*
