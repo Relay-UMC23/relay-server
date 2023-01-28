@@ -56,7 +56,12 @@ public enum BaseResponseStatus {
     /*
      * 8000 : delete
      * */
-
+    DELETE_USERPROFILE_ERROR(false, 8000, "유저 프로필 삭제 도중 에러가 발생했습니다."),
+    DELETE_CLUB_ERROR(false, 8001, "유저가 생성한 그룹을 삭제 도중 에러가 발생했습니다."),
+    DELETE_USER_ERROR(false, 8002, "유저와 관련된 정보들을 삭제 도중 에러가 발생했습니다."),
+    DELETE_RUNNINGRECORD_ERROR(false, 8003, "유저의 달리기 기록 정보들을 삭제 도중 에러가 발생했습니다."),
+    DELETE_TIMETABLE_ERROR(false, 8004, "유저가 생성한 시간표 정보들을 삭제 도중 에러가 발생했습니다."),
+    DELETE_MEMBERSTATUS_ERROR(false, 8005, "유저의 지원 현황을 삭제 도중 에러가 발생했습니다."),
     /*
      * 9500 : jwt
      * */

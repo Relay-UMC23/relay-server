@@ -63,6 +63,12 @@ public class UserController {
         }
     }
 
+    @ResponseBody
+    @DeleteMapping("/withdrawal")
+    public BaseResponse<String> deleteUser(Principal principal) throws BaseException {
+        this.userService.deleteUser(principal);
+        return new BaseResponse<>("회원 탈퇴를 완료했습니다.");
+    }
 
     @ApiOperation(value = "유저 정보 받아오기", notes = "토큰 정보를 통해 해당 유저의 이메일과 이름을 받아옵니다")
     @GetMapping("/")

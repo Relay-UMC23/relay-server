@@ -66,13 +66,13 @@ public class UserProfileService {
         userProfile.setUserName(userProfileList.getUserIdx().getName());
         userProfile.setEmail(userProfileList.getUserIdx().getEmail());
 
-        MemberStatusEntity memberStatus = memberStatusRepository.findByUserProfileIdx(profileIdx);
+        Optional<MemberStatusEntity> memberStatus = memberStatusRepository.findByUserProfileIdx(profileIdx);
         if (memberStatus == null) {
             userProfile.setClubIdx(0L);
             userProfile.setClubName("그룹에 속하지 않습니다.");
         }
-        else if (memberStatus.getApplyStatus().equals("ACCEPTED")) {
-            ClubEntity clubEntity = memberStatus.getClubIdx();
+        else if (memberStatus.get().getApplyStatus().equals("ACCEPTED")) {
+            ClubEntity clubEntity = memberStatus.get().getClubIdx();
             userProfile.setClubIdx(clubEntity.getClubIdx());
             userProfile.setClubName(clubEntity.getName());
         }

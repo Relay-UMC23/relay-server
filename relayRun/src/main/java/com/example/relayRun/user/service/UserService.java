@@ -1,9 +1,18 @@
 package com.example.relayRun.user.service;
 
+import com.example.relayRun.club.entity.ClubEntity;
+import com.example.relayRun.club.entity.MemberStatusEntity;
+import com.example.relayRun.club.entity.TimeTableEntity;
+import com.example.relayRun.club.repository.ClubRepository;
+import com.example.relayRun.club.repository.MemberStatusRepository;
+import com.example.relayRun.club.repository.TimeTableRepository;
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
+import com.example.relayRun.record.entity.RunningRecordEntity;
+import com.example.relayRun.record.repository.RecordRepository;
+import com.example.relayRun.record.repository.RunningRecordRepository;
 import com.example.relayRun.user.dto.*;
 import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
@@ -11,7 +20,9 @@ import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -33,20 +44,32 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.sql.Time;
 import java.util.*;
 
 import static com.example.relayRun.util.ValidationRegex.isRegexEmail;
 import static com.example.relayRun.util.ValidationRegex.isRegexPwd;
+import static java.util.Optional.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private UserRepository userRepository;
-    private UserProfileRepository userProfileRepository;
-    private PasswordEncoder passwordEncoder;
-    private TokenProvider tokenProvider;
-    private RefreshTokenRepository refreshTokenRepository;
-    private AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final ClubRepository clubRepository;
+    @Autowired
+    private final RecordRepository recordRepository;
+    @Autowired
+    private final RunningRecordRepository runningRecordRepository;
+    @Autowired
+    private final MemberStatusRepository memberStatusRepository;
+    @Autowired
+    private final TimeTableRepository timeTableRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private JavaMailSender javaMailSender;
 
@@ -56,18 +79,25 @@ public class UserService {
     private String id = "codusl100@naver.com";
 
 
-    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
-                       PasswordEncoder passwordEncoder, TokenProvider tokenProvider, RefreshTokenRepository refreshTokenRepository,
-                       AuthenticationManagerBuilder authenticationManagerBuilder, JavaMailSender javaMailSender, RedisUtil redisUtil){
-        this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenProvider = tokenProvider;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
-        this.javaMailSender = javaMailSender;
-        this.redisUtil = redisUtil;
-    }
+//    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
+//                       PasswordEncoder passwordEncoder, TokenProvider tokenProvider, RefreshTokenRepository refreshTokenRepository,
+//                       ClubRepository clubRepository, RecordRepository recordRepository, RunningRecordRepository runningRecordRepository,
+//                       MemberStatusRepository memberStatusRepository, TimeTableRepository timeTableRepository,
+//                       AuthenticationManagerBuilder authenticationManagerBuilder, JavaMailSender javaMailSender, RedisUtil redisUtil){
+//        this.userRepository = userRepository;
+//        this.userProfileRepository = userProfileRepository;
+//        this.clubRepository = clubRepository;
+//        this.recordRepository = recordRepository;
+//        this.runningRecordRepository = runningRecordRepository;
+//        this.memberStatusRepository = memberStatusRepository;
+//        this.timeTableRepository = timeTableRepository;
+//        this.passwordEncoder = passwordEncoder;
+//        this.tokenProvider = tokenProvider;
+//        this.refreshTokenRepository = refreshTokenRepository;
+//        this.authenticationManagerBuilder = authenticationManagerBuilder;
+//        this.javaMailSender = javaMailSender;
+//        this.redisUtil = redisUtil;
+//    }
 
     // 회원가입
     public TokenDto signIn(PostUserReq user) throws BaseException {
@@ -137,7 +167,7 @@ public class UserService {
         }
     }
 
-    public boolean isHaveEmail(String email) { return this.userRepository.existsByEmail(email); }
+    public boolean isHaveEmail(String email) { return userRepository.existsByEmail(email); }
 
 
     public TokenDto token(PostUserReq user){
@@ -202,6 +232,87 @@ public class UserService {
 
         // 토큰 발급
         return tokenDto;
+    }
+
+    public void deleteUser(Principal principal) throws BaseException {
+        if(userRepository.findByEmail(principal.getName()).isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        // User 조회
+        UserEntity user = userRepository.findByEmail(principal.getName()).get();
+        UserProfileEntity userProfile = userProfileRepository.findByUserIdx(user);
+
+        // RunningRecord 삭제
+        try {
+            Optional<MemberStatusEntity> profileStatus = Optional.ofNullable(
+                    memberStatusRepository
+                            .findById(userProfile.getUserProfileIdx())
+                            .orElseGet(null));
+        if(!profileStatus.get().equals(null)) {
+            Optional<MemberStatusEntity> memberStatus = memberStatusRepository.findByUserProfileIdx(userProfile.getUserProfileIdx());
+            try {
+                List<RunningRecordEntity> runningRecordList = recordRepository.findAllByMemberStatusIdx(memberStatus.get());
+                for (RunningRecordEntity i : runningRecordList) {
+                    runningRecordList.remove(i);
+                    runningRecordRepository.delete(i);
+                }
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.DELETE_RUNNINGRECORD_ERROR);
+            }
+
+            // TimeTable 삭제
+            try {
+                List<TimeTableEntity> timeTableList = timeTableRepository.findAllByMemberStatusIdx(memberStatus.get());
+                for (TimeTableEntity i : timeTableList) {
+                    timeTableList.remove(i);
+                    timeTableRepository.delete(i);
+                }
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.DELETE_TIMETABLE_ERROR);
+            }
+        }
+        } catch (NullPointerException e){
+            System.out.println(e);
+        }
+
+        // Club 삭제
+        try{
+            List<ClubEntity> clubList = clubRepository.findAllByHostIdx(userProfile);
+            for (ClubEntity i : clubList){
+                clubList.remove(i);
+                clubRepository.delete(i);
+            }
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DELETE_CLUB_ERROR);
+        }
+
+        // MemberStatus 삭제
+        try{
+            List<MemberStatusEntity> memberStatusList = memberStatusRepository.findAllByUserProfileIdx(userProfile);
+            for (MemberStatusEntity i : memberStatusList){
+                memberStatusList.remove(i);
+                memberStatusRepository.delete(i);
+            }
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DELETE_MEMBERSTATUS_ERROR);
+        }
+
+        // UserProfile 삭제
+        try{
+            List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(user);
+            for (UserProfileEntity i : userProfileList){
+                userProfileRepository.delete(i);
+            }
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DELETE_USERPROFILE_ERROR);
+        }
+
+        // User 삭제
+        try{
+            userRepository.delete(user);
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
+        }
     }
 
     public GetUserRes getUserInfo(Principal principal) throws BaseException {
