@@ -1,9 +1,8 @@
 package com.example.relayRun.club.controller;
 
 import com.example.relayRun.club.dto.GetTimeTableListRes;
-import com.example.relayRun.club.dto.PatchTimeTableListReq;
 import com.example.relayRun.club.dto.PostMemberStatusReq;
-import com.example.relayRun.club.dto.TimeTableDTO;
+import com.example.relayRun.club.dto.PostTimeTableReq;
 import com.example.relayRun.club.service.MemberStatusService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
@@ -25,9 +24,9 @@ public class MemberStatusController {
     }
 
     @ResponseBody
-    @PostMapping("/{clubIdx}/member-status")
-    @ApiOperation(value = "그룹 신청 / 시간표 등록", notes = "path variable로 신청하고자 하는 그룹의 clubIdx, body로는 신청자의 userProfileIdx와 시간표 정보를 리스트 형식으로 보내면 그룹 신청이 완료됩니다.")
-    public BaseResponse<String> createMemberStatus(@ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx, @ApiParam(value = "신청자의 userProfileIdx와 시간표 정보(리스트 형식)") @Valid @RequestBody PostMemberStatusReq memberStatus) {
+    @PostMapping("/{clubIdx}")
+    @ApiOperation(value = "그룹 신청", notes = "path variable로 신청하고자 하는 그룹의 clubIdx, body로는 신청자의 userProfileIdx를 보내면 그룹 신청이 완료됩니다.")
+    public BaseResponse<String> createMemberStatus(@ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx, @ApiParam(value = "신청자의 userProfileIdx") @RequestBody PostMemberStatusReq memberStatus) {
         try {
             memberStatusService.createMemberStatus(clubIdx, memberStatus);
             return new BaseResponse<>("그룹 신청 완료");
@@ -37,7 +36,19 @@ public class MemberStatusController {
     }
 
     @ResponseBody
-    @GetMapping("/{clubIdx}/member-status/time-table")
+    @PostMapping("/time-tables")
+    @ApiOperation(value = "시간표 등록", notes = "body로 신청자의 memberStatusIdx와 시간표 정보를 리스트 형식으로 보내면 시간표 등록이 완료됩니다.")
+    public BaseResponse<String> createTimeTable(@ApiParam(value = "신청자의 memberStatusIdx와 시간표 정보(리스트 형식)") @Valid @RequestBody PostTimeTableReq postTimeTableReq) {
+        try {
+            memberStatusService.createTimeTable(postTimeTableReq);
+            return new BaseResponse<>("시간표 등록 완료");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/{clubIdx}/time-tables")
     @ApiOperation(value = "그룹의 전체 시간표 조회", notes = "path variable로 조회하고자 하는 그룹의 clubIdx를 보내면 해당 그룹의 전체 시간표를 리스트 형식으로 반환합니다.")
     public BaseResponse<List<GetTimeTableListRes>> getAllTimeTables(@ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx) {
         try {
@@ -49,24 +60,12 @@ public class MemberStatusController {
     }
 
     @ResponseBody
-    @GetMapping("/member-status/{userProfileIdx}/time-table")
+    @GetMapping("/member-status/{userProfileIdx}/time-tables")
     @ApiOperation(value = "개인 시간표 조회", notes = "path variable로 조회하고자 하는 유저의 userProfileIdx를 보내면 해당 유저의 시간표를 리스트 형식으로 반환합니다.")
     public BaseResponse<List<GetTimeTableListRes>> getUserTimeTable(@ApiParam(value = "조회하고자 하는 유저의 userProfileIdx")@PathVariable Long userProfileIdx) {
         try {
             List<GetTimeTableListRes> timeTableList = memberStatusService.getUserTimeTable(userProfileIdx);
             return new BaseResponse<>(timeTableList);
-        } catch (BaseException e) {
-            return new BaseResponse<>(e.getStatus());
-        }
-    }
-
-    @ResponseBody
-    @PatchMapping("/member-status/time-table")
-    @ApiOperation(value = "개인 시간표 수정", notes = "body로 시간표 정보를 리스트 형식으로 보내면 시간표 수정이 완료됩니다.")
-    public BaseResponse<String> updateUserTimeTable(@ApiParam(value = "시간표 정보(리스트 형식)") @Valid @RequestBody List<PatchTimeTableListReq> timeTables) {
-        try {
-            memberStatusService.updateUserTimeTable(timeTables);
-            return new BaseResponse<>("시간표 수정 완료");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
