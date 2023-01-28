@@ -1,6 +1,7 @@
 package com.example.relayRun.club.service;
 
 import com.example.relayRun.club.dto.GetTimeTableListRes;
+import com.example.relayRun.club.dto.PatchTimeTableListReq;
 import com.example.relayRun.club.dto.PostMemberStatusReq;
 import com.example.relayRun.club.dto.TimeTableDTO;
 import com.example.relayRun.club.entity.ClubEntity;
@@ -177,26 +178,19 @@ public class MemberStatusService {
         }
     }
 
-//    public void updateUserTimeTable(Long userProfileIdx, TimeTableDTO timeTable) throws BaseException {
-//        try {
-//            //신청 유저 정보
-//            Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
-//            if(userProfile.isEmpty()) {
-//                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
-//            }
-//
-//            List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(userProfileIdx);
-//            if(memberStatusEntityList.isEmpty()) {
-//                throw new BaseException(BaseResponseStatus.MEMBER_STATUS_EMPTY);
-//            }
-//
-//            //memberStatusIdx로 시간표 조회
-//            Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
-//            List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
-//
-//        } catch (Exception e) {
-//            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
-//        }
-//    }
+    public void updateUserTimeTable(List<PatchTimeTableListReq> timeTables) throws BaseException {
+        try {
+            //신청 유저 정보 확인
+
+            //시간표 수정
+//            for(PatchTimeTableListReq t : timeTables)
+//                //중복 시간표 비교
+//                timeTableEntity.update
+//                timeTableRepository.save(timeTableEntity);
+
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
 
 }

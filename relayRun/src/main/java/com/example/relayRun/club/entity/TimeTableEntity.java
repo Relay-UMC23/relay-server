@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bytebuddy.asm.Advice;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
@@ -49,6 +50,14 @@ public class TimeTableEntity extends BaseTimeEntity {
     @Builder
     public TimeTableEntity(MemberStatusEntity memberStatusIdx, Integer day, LocalDateTime start, LocalDateTime end, Float goal, GoalType goalType) {
         this.memberStatusIdx = memberStatusIdx;
+        this.day = day;
+        this.start = start;
+        this.end = end;
+        this.goal = goal;
+        this.goalType = goalType;
+    }
+
+    public void updateTimeTable(Integer day, LocalDateTime start, LocalDateTime end, Float goal, GoalType goalType) {
         this.day = day;
         this.start = start;
         this.end = end;
