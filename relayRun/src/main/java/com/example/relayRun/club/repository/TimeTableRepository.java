@@ -21,5 +21,5 @@ public interface TimeTableRepository extends JpaRepository<TimeTableEntity, Long
 
     List<TimeTableEntity> findByMemberStatusIdx_MemberStatusIdx(Long memberStatusIdx);
     Optional<TimeTableEntity> findByMemberStatusIdx(MemberStatusEntity memberStatus);
-    List<TimeTableEntity> findAllByMemberStatusIdx(MemberStatusEntity memberStatus);
+    Optional<List<TimeTableEntity>> findAllByMemberStatusIdx(MemberStatusEntity memberStatus);
 }

@@ -21,7 +21,7 @@ public class MemberStatusEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberStatusIdx;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clubIdx")
     private ClubEntity clubIdx;
 
@@ -35,8 +35,11 @@ public class MemberStatusEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
-    @OneToMany(mappedBy = "memberStatusIdx", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "memberStatusIdx", orphanRemoval = true)
     List<RunningRecordEntity> runningRecords = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "memberStatusIdx", orphanRemoval = true)
+    List<TimeTableEntity> timeTables = new ArrayList<>();
 
     @Builder
     public MemberStatusEntity(ClubEntity clubIdx, UserProfileEntity userProfileIdx) {

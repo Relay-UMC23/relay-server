@@ -41,7 +41,7 @@ public class UserEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "userProfileIdx", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "userProfileIdx", orphanRemoval = true)
     private List<UserProfileEntity> userProfileEntities = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

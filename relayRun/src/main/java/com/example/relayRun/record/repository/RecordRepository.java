@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface RecordRepository extends JpaRepository <RunningRecordEntity, Long> {
     Optional<RunningRecordEntity> findByRunningRecordIdxAndStatus(Long idx, String status);
     Optional<RunningRecordEntity> findByMemberStatusIdx(MemberStatusEntity memberStatus);
-    List<RunningRecordEntity> findAllByMemberStatusIdx(MemberStatusEntity memberStatus);
+    Optional<List<RunningRecordEntity>> findAllByMemberStatusIdx(MemberStatusEntity memberStatus);
 }

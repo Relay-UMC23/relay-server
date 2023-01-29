@@ -135,7 +135,7 @@ public class RunningRecordService {
             }
 
             List<RunningRecordEntity> records = new ArrayList<>();
-            List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdx(user.get());
+            List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdx(user.get()).get();
             for (UserProfileEntity profile : profileList) {
                 List<MemberStatusEntity> statusList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(profile.getUserProfileIdx());
                 for (MemberStatusEntity status : statusList) {

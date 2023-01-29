@@ -1,5 +1,8 @@
 package com.example.relayRun.user.entity;
 
+import com.example.relayRun.club.entity.ClubEntity;
+import com.example.relayRun.club.entity.MemberStatusEntity;
+import com.example.relayRun.club.entity.TimeTableEntity;
 import com.example.relayRun.util.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +12,8 @@ import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -42,5 +47,10 @@ public class UserProfileEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "hostIdx", orphanRemoval = true)
+    private ClubEntity club;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "userProfileIdx", orphanRemoval = true)
+    List<MemberStatusEntity> memberStatusEntities = new ArrayList<>();
 }
 

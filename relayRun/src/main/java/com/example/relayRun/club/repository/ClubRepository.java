@@ -16,6 +16,6 @@ public interface ClubRepository extends JpaRepository <ClubEntity, Long> {
     List<ClubEntity> findAll();
     List<GetClubListRes> findByNameContaining(String search);
     Optional<ClubEntity> findByHostIdx(UserProfileEntity hostIdx);
-    List<ClubEntity> findAllByHostIdx(UserProfileEntity hostIdx);
+    Optional<List<ClubEntity>> findAllByHostIdx(UserProfileEntity userProfile);
     Optional<ClubEntity> findByClubIdxAndStatus(Long id, String status);
 }

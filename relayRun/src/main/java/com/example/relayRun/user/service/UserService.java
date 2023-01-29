@@ -10,6 +10,7 @@ import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
+import com.example.relayRun.record.entity.LocationEntity;
 import com.example.relayRun.record.entity.RunningRecordEntity;
 import com.example.relayRun.record.repository.RecordRepository;
 import com.example.relayRun.record.repository.RunningRecordRepository;
@@ -235,85 +236,46 @@ public class UserService {
     }
 
     public void deleteUser(Principal principal) throws BaseException {
-        if(userRepository.findByEmail(principal.getName()).isEmpty()) {
-            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
-        }
         // User 조회
-        UserEntity user = userRepository.findByEmail(principal.getName()).get();
-        UserProfileEntity userProfile = userProfileRepository.findByUserIdx(user);
+        Optional<UserEntity> optionalUser = userRepository.findByEmail(principal.getName());
+        if (optionalUser.isPresent()) {
+            // UserEntity
+            UserEntity user = optionalUser.get();
+            String email = user.getEmail();
+            Long userIdx = user.getUserIdx();
 
-        // RunningRecord 삭제
-        try {
-            Optional<MemberStatusEntity> profileStatus = Optional.ofNullable(
-                    memberStatusRepository
-                            .findById(userProfile.getUserProfileIdx())
-                            .orElseGet(null));
-        if(!profileStatus.get().equals(null)) {
-            Optional<MemberStatusEntity> memberStatus = memberStatusRepository.findByUserProfileIdx(userProfile.getUserProfileIdx());
-            try {
-                List<RunningRecordEntity> runningRecordList = recordRepository.findAllByMemberStatusIdx(memberStatus.get());
-                for (RunningRecordEntity i : runningRecordList) {
-                    runningRecordList.remove(i);
-                    runningRecordRepository.delete(i);
-                }
-            } catch (Exception e) {
-                throw new BaseException(BaseResponseStatus.DELETE_RUNNINGRECORD_ERROR);
+            // Refresh Token 삭제
+            Optional<RefreshTokenEntity> optionalRT = refreshTokenRepository.findByKeyId(email);
+            if(optionalRT.isPresent()) {
+                refreshTokenRepository.delete(optionalRT.get());
             }
-
-            // TimeTable 삭제
-            try {
-                List<TimeTableEntity> timeTableList = timeTableRepository.findAllByMemberStatusIdx(memberStatus.get());
-                for (TimeTableEntity i : timeTableList) {
-                    timeTableList.remove(i);
-                    timeTableRepository.delete(i);
-                }
-            } catch (Exception e) {
-                throw new BaseException(BaseResponseStatus.DELETE_TIMETABLE_ERROR);
-            }
+            // UserProfileEntity
+//            Optional<List<UserProfileEntity>> optionalUserProfile = userProfileRepository.findAllByUserIdx(user);
+//            if (optionalUserProfile.isPresent()) {
+//                List<UserProfileEntity> userProfileList = optionalUserProfile.get();
+//                for (UserProfileEntity userProfile : userProfileList) {
+//                    // club 삭제 (유저가 생성한 club)
+//                    Optional<List<ClubEntity>> optionalClub = clubRepository.findAllByHostIdx(userProfile);
+//                    if (optionalClub.isPresent()) {
+//                        List<ClubEntity> clubList = optionalClub.get();
+//                        Iterator<ClubEntity> clubLists = clubList.iterator();
+//                        // 유저가 생성한 club 삭제 - 해당 club의 memberStatus, runningRecords, timetable 다 삭제
+//                        while (clubLists.hasNext()) {
+//                            ClubEntity clubs = clubLists.next();
+//                            clubLists.remove();
+//                            clubRepository.delete(clubs);
+//                        }
+//                    }
+//                }
+//            }
+            // User 삭제 - userProfile, memberStatus 모두 삭제
+            userRepository.deleteById(userIdx);
         }
-        } catch (NullPointerException e){
-            System.out.println(e);
-        }
-
-        // Club 삭제
-        try{
-            List<ClubEntity> clubList = clubRepository.findAllByHostIdx(userProfile);
-            for (ClubEntity i : clubList){
-                clubList.remove(i);
-                clubRepository.delete(i);
-            }
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DELETE_CLUB_ERROR);
-        }
-
-        // MemberStatus 삭제
-        try{
-            List<MemberStatusEntity> memberStatusList = memberStatusRepository.findAllByUserProfileIdx(userProfile);
-            for (MemberStatusEntity i : memberStatusList){
-                memberStatusList.remove(i);
-                memberStatusRepository.delete(i);
-            }
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DELETE_MEMBERSTATUS_ERROR);
-        }
-
-        // UserProfile 삭제
-        try{
-            List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(user);
-            for (UserProfileEntity i : userProfileList){
-                userProfileRepository.delete(i);
-            }
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.DELETE_USERPROFILE_ERROR);
-        }
-
-        // User 삭제
-        try{
-            userRepository.delete(user);
-        } catch (Exception e) {
+        else {
             throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
         }
     }
+
 
     public GetUserRes getUserInfo(Principal principal) throws BaseException {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
@@ -366,7 +328,7 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
         // userIdx가 생성한 프로필 idx 다 조회
-        List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(optional.get());
+        List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(optional.get()).get();
         List<GetProfileRes> getProfileList = new ArrayList<>();
         // 조회한 프로필 Id들 Dto에 담기
         for (UserProfileEntity profile : userProfileList) {
