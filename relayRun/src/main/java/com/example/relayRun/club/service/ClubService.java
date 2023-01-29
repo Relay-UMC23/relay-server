@@ -1,5 +1,7 @@
 package com.example.relayRun.club.service;
 
+import com.example.relayRun.club.dto.GetClubDetailRes;
+import com.example.relayRun.club.dto.GetMemberOfClubRes;
 import com.example.relayRun.club.dto.PostClubReq;
 import com.example.relayRun.club.dto.GetClubListRes;
 import com.example.relayRun.club.dto.TimeTableDTO;
@@ -9,18 +11,20 @@ import com.example.relayRun.club.entity.TimeTableEntity;
 import com.example.relayRun.club.repository.ClubRepository;
 import com.example.relayRun.club.repository.MemberStatusRepository;
 import com.example.relayRun.club.repository.TimeTableRepository;
+import com.example.relayRun.user.dto.GetMemberProfileRes;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
-import com.example.relayRun.util.GoalType;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.sql.Time;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -45,8 +49,7 @@ public class ClubService {
 
     public List<GetClubListRes> getClubs() throws BaseException {
         try {
-            List<GetClubListRes> clubList = clubRepository.findByOrderByRecruitStatusDesc();
-            return clubList;
+            return clubRepository.findByOrderByRecruitStatusDesc();
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -54,8 +57,58 @@ public class ClubService {
 
     public List<GetClubListRes> getClubsByName(String search) throws BaseException {
         try {
-            List<GetClubListRes> clubList = clubRepository.findByNameContaining(search);
-            return clubList;
+            return clubRepository.findByNameContaining(search);
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public List<GetMemberOfClubRes> getMemberOfClub(Long clubIdx) throws BaseException {
+        try {
+            List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findAllByClubIdx_ClubIdxAndApplyStatus(clubIdx, "ACCEPTED");
+            if(memberStatusEntityList.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+            }
+            List<GetMemberOfClubRes> res = new ArrayList<>();
+            for(MemberStatusEntity memberStatusEntity : memberStatusEntityList) {
+                UserProfileEntity userProfileEntity = memberStatusEntity.getUserProfileIdx();
+                GetMemberProfileRes getMemberProfileRes = GetMemberProfileRes.builder()
+                        .userProfileIdx(userProfileEntity.getUserProfileIdx())
+                        .nickname(userProfileEntity.getNickName())
+                        .statusMsg(userProfileEntity.getStatusMsg())
+                        .imgUrl(userProfileEntity.getImgURL())
+                        .build();
+                GetMemberOfClubRes getMemberOfClubRes = GetMemberOfClubRes.builder()
+                        .memberStatusIdx(memberStatusEntity.getMemberStatusIdx())
+                        .userProfile(getMemberProfileRes)
+                        .build();
+                res.add(getMemberOfClubRes);
+            }
+            return res;
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    public GetClubDetailRes getClubDetail(Long clubIdx) throws BaseException {
+        try {
+            Optional<ClubEntity> optional = clubRepository.findById(clubIdx);
+            if(optional.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+            }
+            ClubEntity clubEntity = optional.get();
+            return GetClubDetailRes.builder()
+                    .clubIdx(clubEntity.getClubIdx())
+                    .imgURL(clubEntity.getImgURL())
+                    .name(clubEntity.getName())
+                    .content(clubEntity.getContent())
+                    .hostIdx(clubEntity.getHostIdx().getUserProfileIdx())
+                    .level(clubEntity.getLevel())
+                    .goalType(clubEntity.getGoalType())
+                    .goal(clubEntity.getGoal())
+                    .build();
         } catch (Exception e) {
             System.out.println(e);
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
@@ -107,14 +160,14 @@ public class ClubService {
             List<TimeTableDTO> timeTables = club.getTimeTable();
 
             //1. formatter 정의
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
             for (int i = 0; i < timeTables.size(); i++) {
                 //2. 입력으로 들어온 string -> local date time으로 변환
                 String startStr = timeTables.get(i).getStart();
                 String endStr = timeTables.get(i).getEnd();
-                LocalDateTime startTime = LocalDateTime.parse(startStr, formatter);
-                LocalDateTime endTime = LocalDateTime.parse(endStr, formatter);
+                LocalTime startTime = LocalTime.parse(startStr, formatter);
+                LocalTime endTime = LocalTime.parse(endStr, formatter);
 
                 TimeTableEntity timeTableEntity = TimeTableEntity.builder()
                         .memberStatusIdx(memberStatusEntity)

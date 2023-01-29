@@ -138,6 +138,17 @@ public class UserController {
     }
 
     @ResponseBody
+    @ApiOperation(value = "알람 수신 변경", notes ="알람 수신을 변경하고자 하는 유저의 프로필 idx 식별자를 Path variable에 담아주세요!")
+    @PatchMapping("/changeAlarm/{profileIdx}")
+    public BaseResponse<String> changeAlarm(Principal principal, @PathVariable("profileIdx") Long profileIdx) {
+        try{
+            this.userService.changeAlarm(principal, profileIdx);
+            return new BaseResponse<>("알람 설정 변경을 완료했습니다.");
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+    
     @ApiOperation(value = "유저 프로필 세부 조회", notes ="Path variable로 상세 조회할 프로필 Idx 식별자 넣어주세요!")
     @GetMapping("/profileList/{profileIdx}")
     public BaseResponse<GetProfileRes> getUserProfile(Principal principal, @PathVariable("profileIdx") Long profileIdx) throws BaseException {

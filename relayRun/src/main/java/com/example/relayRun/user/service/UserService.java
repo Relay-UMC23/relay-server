@@ -344,6 +344,28 @@ public class UserService {
         return userProfileEntity.getUserProfileIdx();
     }
 
+    public void changeAlarm(Principal principal, Long profileIdx) throws BaseException {
+        Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+        if(optionalUserEntity.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        // principal의 userIdx랑 userProfileIdx의 userIdx 가 같다면
+        Optional<UserProfileEntity> profileOptional = userProfileRepository.findByUserProfileIdx(profileIdx);
+        System.out.println("유저 Idx : " + optionalUserEntity.get().getUserIdx());
+        System.out.println("프로필의 유저 Idx : "+ profileOptional.get().getUserIdx().getUserIdx());
+        if(!profileOptional.get().getUserIdx().getUserIdx().equals(optionalUserEntity.get().getUserIdx())) {
+            throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
+        }
+        UserProfileEntity UserProfile = userProfileRepository.findByUserProfileIdx(profileIdx).get();
+        if (UserProfile.getIsAlarmOn().equals("y")) {
+            UserProfile.setIsAlarmOn("n");
+            userProfileRepository.save(UserProfile);
+        }
+        else if (UserProfile.getIsAlarmOn().equals("n")) {
+            UserProfile.setIsAlarmOn("y");
+            userProfileRepository.save(UserProfile);
+        }
+    }
     public MimeMessage createMessage(String to)throws MessagingException, UnsupportedEncodingException {
         log.info("보내는 대상 : "+ to);
         log.info("인증 번호 : " + ePw);
@@ -381,6 +403,15 @@ public class UserService {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
         if(optionalUserEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        UserProfileEntity UserProfile = userProfileRepository.findByUserProfileIdx(optionalUserEntity.get().getUserIdx()).get();
+        if (UserProfile.getIsAlarmOn().equals("y")) {
+            UserProfile.setIsAlarmOn("n");
+            userProfileRepository.save(UserProfile);
+        }
+        else if (UserProfile.getIsAlarmOn().equals("n")) {
+            UserProfile.setIsAlarmOn("y");
+            userProfileRepository.save(UserProfile);
         }
         MimeMessage message = createMessage(to);
         String email = optionalUserEntity.get().getEmail();

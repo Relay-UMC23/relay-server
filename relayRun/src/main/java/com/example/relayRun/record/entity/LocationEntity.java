@@ -1,8 +1,6 @@
 package com.example.relayRun.record.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import javax.persistence.*;
@@ -12,6 +10,7 @@ import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
@@ -35,4 +34,7 @@ public class LocationEntity {
     @Column(columnDefinition = "varchar(10) default 'running'")
     private String status;
 
+    public void setRecordIdx(RunningRecordEntity record) {
+        this.recordIdx = record;
+    }
 }

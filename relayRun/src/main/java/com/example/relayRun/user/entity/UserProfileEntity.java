@@ -52,5 +52,8 @@ public class UserProfileEntity extends BaseTimeEntity {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "userProfileIdx", orphanRemoval = true)
     List<MemberStatusEntity> memberStatusEntities = new ArrayList<>();
+    public void setIsAlarmOn (String isAlarmOn){
+        this.isAlarmOn = isAlarmOn;
+    }
 }
 
