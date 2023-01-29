@@ -40,7 +40,19 @@ public class MemberStatusController {
     @GetMapping("/{clubIdx}")
     public BaseResponse<List<GetTimeTableListRes>> getTimeTables(@PathVariable Long clubIdx) {
         try {
-            List<GetTimeTableListRes> timeTableList = memberStatusService.getTimeTables(clubIdx);
+            List<GetTimeTableListRes> timeTableList = memberStatusService.getTimeTablesByClubIdx(clubIdx);
+            return new BaseResponse<>(timeTableList);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    // memberStatusIdx 별 시간표 반환 테스트
+    @ResponseBody
+    @GetMapping("")
+    public BaseResponse<List<GetTimeTableListRes>> getTimeTablesByMemberStatusIdx(@RequestParam("mid") Long memberStatusIdx) {
+        try {
+            List<GetTimeTableListRes> timeTableList = memberStatusService.getTimeTablesByMemberStatusIdx(memberStatusIdx);
             return new BaseResponse<>(timeTableList);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

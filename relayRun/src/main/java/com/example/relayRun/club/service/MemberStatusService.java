@@ -13,11 +13,13 @@ import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
+import com.example.relayRun.util.BaseResponse;
 import com.example.relayRun.util.BaseResponseStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +30,6 @@ public class MemberStatusService {
 
     private final MemberStatusRepository memberStatusRepository;
     private final TimeTableRepository timeTableRepository;
-    private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final ClubRepository clubRepository;
 
@@ -39,7 +40,6 @@ public class MemberStatusService {
                                ClubRepository clubRepository) {
         this.memberStatusRepository = memberStatusRepository;
         this.timeTableRepository = timeTableRepository;
-        this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.clubRepository = clubRepository;
     }
@@ -53,6 +53,9 @@ public class MemberStatusService {
 
             //신청 대상 그룹 정보
             Optional<ClubEntity> club = clubRepository.findById(clubIdx);
+            if(club.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+            }
 
             //member_status 등록
             MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
@@ -65,14 +68,14 @@ public class MemberStatusService {
             //시간표 등록
             List<TimeTableDTO> timeTables = memberStatus.getTimeTables();
             //1. formatter 정의
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
             for (int i = 0; i < timeTables.size(); i++) {
                 //2. 입력으로 들어온 string -> local date time으로 변환
                 String startStr = timeTables.get(i).getStart();
                 String endStr = timeTables.get(i).getEnd();
-                LocalDateTime startTime = LocalDateTime.parse(startStr, formatter);
-                LocalDateTime endTime = LocalDateTime.parse(endStr, formatter);
+                LocalTime startTime = LocalTime.parse(startStr, formatter);
+                LocalTime endTime = LocalTime.parse(endStr, formatter);
 
                 //3. 중복 시간표 비교
                 List<Long> duplicateTimeTableList = timeTableRepository.selectDuplicateTimeTable(clubIdx,
@@ -100,7 +103,7 @@ public class MemberStatusService {
     }
 
     @Transactional
-    public List<GetTimeTableListRes> getTimeTables(Long clubIdx) throws BaseException {
+    public List<GetTimeTableListRes> getTimeTablesByClubIdx(Long clubIdx) throws BaseException {
         try {
             //1. clubIdx로 memberStatus 조회
             List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByClubIdx_ClubIdx(clubIdx);
@@ -126,6 +129,32 @@ public class MemberStatusService {
             }
 
             return timeTableList;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    @Transactional
+    public List<GetTimeTableListRes> getTimeTablesByMemberStatusIdx(Long memberStatusIdx) throws BaseException {
+        try {
+            List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
+            List<GetTimeTableListRes> timeTableList = new ArrayList<>();
+
+            for(TimeTableEntity timeTableEntity : timeTableEntityList) {
+                GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
+                        .timeTableIdx(timeTableEntity.getTimeTableIdx())
+                        .day(timeTableEntity.getDay())
+                        .start(timeTableEntity.getStart())
+                        .end(timeTableEntity.getEnd())
+                        .goal(timeTableEntity.getGoal())
+                        .goalType(timeTableEntity.getGoalType())
+                        .build();
+
+                timeTableList.add(timeTable);
+            }
+
+            return timeTableList;
+
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }

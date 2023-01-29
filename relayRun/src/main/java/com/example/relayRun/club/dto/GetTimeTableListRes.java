@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 public class GetTimeTableListRes {
     private Long timeTableIdx;
     private Integer day;
-    private LocalDateTime start;
-    private LocalDateTime end;
+    private LocalTime start;
+    private LocalTime end;
     private Float goal;
     private GoalType goalType;
 }
