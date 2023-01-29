@@ -40,7 +40,7 @@ public class MemberStatusService {
     }
 
     @Transactional
-    public void createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
+    public Long createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
         try {
             Long userProfileIdx = memberStatus.getUserProfileIdx();
             Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
@@ -66,15 +66,17 @@ public class MemberStatusService {
                     .build();
 
             memberStatusRepository.save(memberStatusEntity);
+
+            return memberStatusEntity.getMemberStatusIdx();
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.POST_MEMBER_STATUS_FAIL);
         }
     }
 
     @Transactional
-    public void createTimeTable(PostTimeTableReq postTimeTableReq) throws BaseException {
+    public void createTimeTable(Long memberStatusIdx, PostTimeTableReq postTimeTableReq) throws BaseException {
         try {
-            Optional<MemberStatusEntity> memberStatusEntity = memberStatusRepository.findById(postTimeTableReq.getMemberStatusIdx());
+            Optional<MemberStatusEntity> memberStatusEntity = memberStatusRepository.findById(memberStatusIdx);
             if(memberStatusEntity.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
             }
@@ -170,6 +172,42 @@ public class MemberStatusService {
             return timeTableList;
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    @Transactional
+    public void updateTimeTable(Long userProfileIdx, PostTimeTableReq postTimeTableReq) throws BaseException {
+        try {
+            //memberStatusIdx 찾기
+            List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(userProfileIdx);
+            if(memberStatusEntityList.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+            }
+
+            //memberStatusIdx로 시간표 조회
+            Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
+            List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
+
+            for(TimeTableEntity timeTableEntity : timeTableEntityList) {
+                timeTableRepository.delete(timeTableEntity);
+            }
+
+            List<TimeTableDTO> timeTables = postTimeTableReq.getTimeTables();
+
+            for (int i = 0; i < timeTables.size(); i++) {
+                TimeTableEntity timeTableEntity = TimeTableEntity.builder()
+                        .memberStatusIdx(memberStatusEntityList.get(0))
+                        .day(timeTables.get(i).getDay())
+                        .start(timeTables.get(i).getStart())
+                        .end(timeTables.get(i).getEnd())
+                        .goal(timeTables.get(i).getGoal())
+                        .goalType(timeTables.get(i).getGoalType())
+                        .build();
+
+                timeTableRepository.save(timeTableEntity);
+            }
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.POST_TIME_TABLE_FAIL);
         }
     }
 

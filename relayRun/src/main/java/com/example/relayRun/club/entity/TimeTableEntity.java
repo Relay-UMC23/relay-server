@@ -56,12 +56,4 @@ public class TimeTableEntity extends BaseTimeEntity {
         this.goal = goal;
         this.goalType = goalType;
     }
-
-    public void updateTimeTable(Integer day, LocalDateTime start, LocalDateTime end, Float goal, GoalType goalType) {
-        this.day = day;
-        this.start = start;
-        this.end = end;
-        this.goal = goal;
-        this.goalType = goalType;
-    }
 }
