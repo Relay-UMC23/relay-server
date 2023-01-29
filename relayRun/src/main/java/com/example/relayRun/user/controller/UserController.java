@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -158,6 +159,22 @@ public class UserController {
             return new BaseResponse<>("인증번호 인증에 성공하였습니다.");
         } else {
             return new BaseResponse<>("인증번호 인증에 실패하였습니다.");
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("/kakao-login")
+    @ApiOperation(value = "카카오 소셜 로그인", notes = "body로 카카오에서 받은 토큰을 kakaoAccessToken 변수에 담아 보내주세요.")
+    public BaseResponse<TokenDto> kakaoLogin(@RequestBody Map<String, String> kakaoAccessToken) {
+        String accessToken = kakaoAccessToken.get("kakaoAccessToken");
+        if (accessToken.length() == 0 || accessToken == null) {
+            return new BaseResponse<>(BaseResponseStatus.KAKAO_ACCESS_TOKEN_EMPTY);
+        }
+        try {
+            TokenDto token = userService.kakaoLogin(accessToken);
+            return new BaseResponse<>(token);
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
     }
 }

@@ -5,13 +5,21 @@ import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
 import com.example.relayRun.user.dto.*;
+import com.example.relayRun.user.dto.kakao.KakaoProfile;
 import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -26,7 +34,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -351,5 +361,56 @@ public class UserService {
         }
         return true;
     }
+
+    public TokenDto kakaoLogin(String kakaoAccessToken) throws BaseException {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + kakaoAccessToken);
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        //카카오 프로필 가져오기
+        HttpEntity<MultiValueMap<String, String>> kakaoProfileRequest = new HttpEntity<>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                "https://kapi.kakao.com/v2/user/me",
+                HttpMethod.POST,
+                kakaoProfileRequest,
+                String.class
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        KakaoProfile kakaoProfile = null;
+        try {
+            kakaoProfile = objectMapper.readValue(response.getBody(), KakaoProfile.class);
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        String kakaoName = kakaoProfile.getProperties().getNickname();
+        String kakaoEmail = kakaoProfile.getKakao_account().getEmail();
+
+        if(kakaoName == null || kakaoEmail == null) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_GET_KAKAO_PROFILE);
+        }
+
+        //존재하지 않는 이메일일 경우 회원가입 진행, 존재하는 경우 로그인 진행
+        if(!isHaveEmail(kakaoEmail)) {
+            PostUserReq postUserReq = PostUserReq.builder()
+                    .name(kakaoName)
+                    .email(kakaoEmail)
+                    .pwd("abcde12345")  //임의의 비밀번호
+                    .build();
+
+            return signIn(postUserReq);
+        } else {
+            PostLoginReq postLoginReq = new PostLoginReq(
+                    kakaoEmail,
+                    "abcde12345");  //임의의 비밀번호
+
+            return logIn(postLoginReq);
+        }
+    }
+
 }
 

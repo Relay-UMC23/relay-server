@@ -55,6 +55,10 @@ public enum BaseResponseStatus {
 
     SOCIAL(false, 5001, "소셜로 로그인을 진행한 이메일 입니다."),
     NOT_SOCIAL(false, 2001, "소셜이 로그인으로 진행한 이메일입니다."),
+
+    KAKAO_ACCESS_TOKEN_EMPTY(false, 2001, "카카오 access token을 보내주세요."),
+    FAILED_TO_GET_KAKAO_PROFILE(false, 2001, "카카오 프로필이 존재하지 않습니다."),
+
     /*
      * 5000: database error
      * */
