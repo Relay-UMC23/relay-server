@@ -249,28 +249,13 @@ public class UserService {
             if(optionalRT.isPresent()) {
                 refreshTokenRepository.delete(optionalRT.get());
             }
-            // UserProfileEntity
-//            Optional<List<UserProfileEntity>> optionalUserProfile = userProfileRepository.findAllByUserIdx(user);
-//            if (optionalUserProfile.isPresent()) {
-//                List<UserProfileEntity> userProfileList = optionalUserProfile.get();
-//                for (UserProfileEntity userProfile : userProfileList) {
-//                    // club 삭제 (유저가 생성한 club)
-//                    Optional<List<ClubEntity>> optionalClub = clubRepository.findAllByHostIdx(userProfile);
-//                    if (optionalClub.isPresent()) {
-//                        List<ClubEntity> clubList = optionalClub.get();
-//                        Iterator<ClubEntity> clubLists = clubList.iterator();
-//                        // 유저가 생성한 club 삭제 - 해당 club의 memberStatus, runningRecords, timetable 다 삭제
-//                        while (clubLists.hasNext()) {
-//                            ClubEntity clubs = clubLists.next();
-//                            clubLists.remove();
-//                            clubRepository.delete(clubs);
-//                        }
-//                    }
-//                }
-//            }
-            // User 삭제 - userProfile, memberStatus 모두 삭제
-            userRepository.deleteById(userIdx);
-        }
+            // User 삭제
+            try {
+                userRepository.deleteById(userIdx);
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
+                }
+            }
         else {
             throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
         }
