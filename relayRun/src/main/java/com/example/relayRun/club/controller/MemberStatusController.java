@@ -1,5 +1,6 @@
 package com.example.relayRun.club.controller;
 
+import com.example.relayRun.club.dto.GetTimeTableAndUserProfileRes;
 import com.example.relayRun.club.dto.GetTimeTableListRes;
 import com.example.relayRun.club.dto.PostMemberStatusReq;
 import com.example.relayRun.club.dto.PostTimeTableReq;
@@ -51,9 +52,9 @@ public class MemberStatusController {
     @ApiOperation(value = "그룹의 전체 시간표 조회", notes = "path variable로 조회하고자 하는 그룹의 clubIdx를 보내면 해당 그룹의 전체 시간표를 리스트 형식으로 반환합니다.")
     @ResponseBody
     @GetMapping("/{clubIdx}/time-tables")
-    public BaseResponse<List<GetTimeTableListRes>> getAllTimeTables(@ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx) {
+    public BaseResponse<List<GetTimeTableAndUserProfileRes>> getAllTimeTables(@ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx) {
         try {
-            List<GetTimeTableListRes> timeTableList = memberStatusService.getTimeTablesByClubIdx(clubIdx);
+            List<GetTimeTableAndUserProfileRes> timeTableList = memberStatusService.getTimeTablesByClubIdx(clubIdx);
             return new BaseResponse<>(timeTableList);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());

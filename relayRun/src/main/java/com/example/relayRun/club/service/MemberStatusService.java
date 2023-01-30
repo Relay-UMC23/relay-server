@@ -1,9 +1,6 @@
 package com.example.relayRun.club.service;
 
-import com.example.relayRun.club.dto.GetTimeTableListRes;
-import com.example.relayRun.club.dto.PostMemberStatusReq;
-import com.example.relayRun.club.dto.PostTimeTableReq;
-import com.example.relayRun.club.dto.TimeTableDTO;
+import com.example.relayRun.club.dto.*;
 import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.entity.MemberStatusEntity;
 import com.example.relayRun.club.entity.TimeTableEntity;
@@ -100,7 +97,7 @@ public class MemberStatusService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetTimeTableListRes> getTimeTablesByClubIdx(Long clubIdx) throws BaseException {
+    public List<GetTimeTableAndUserProfileRes> getTimeTablesByClubIdx(Long clubIdx) throws BaseException {
         try {
             //1. clubIdx로 memberStatus 조회
             List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByClubIdx_ClubIdx(clubIdx);
@@ -109,20 +106,13 @@ public class MemberStatusService {
             }
 
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
-            //formatter 정의
-            //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            List<GetTimeTableAndUserProfileRes> allTimeTableList = new ArrayList<>();
 
             //2. 해당 memberStatusIdx로 TimeTable 조회
             for(MemberStatusEntity memberStatus : memberStatusEntityList) {
                 List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatus.getMemberStatusIdx());
 
                 for(TimeTableEntity timeTableEntity : timeTableEntityList) {
-                    //local date time -> string으로 변환
-//                    LocalDateTime startTime = timeTableEntity.getStart();
-//                    LocalDateTime endTime = timeTableEntity.getEnd();
-//                    String startStr = startTime.format(formatter);
-//                    String endStr = endTime.format(formatter);
-
                     GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
                             .timeTableIdx(timeTableEntity.getTimeTableIdx())
                             .day(timeTableEntity.getDay())
@@ -134,8 +124,20 @@ public class MemberStatusService {
 
                     timeTableList.add(timeTable);
                 }
+
+                //유저 정보
+                Long userProfileIdx = memberStatus.getUserProfileIdx().getUserProfileIdx();
+                UserProfileEntity userProfileEntity = userProfileRepository.findOneByUserProfileIdx(userProfileIdx);
+
+                GetTimeTableAndUserProfileRes allTimeTable = GetTimeTableAndUserProfileRes.builder()
+                        .userProfileIdx(userProfileIdx)
+                        .nickName(userProfileEntity.getNickName())
+                        .timeTables(timeTableList)
+                        .build();
+
+                allTimeTableList.add(allTimeTable);
             }
-            return timeTableList;
+            return allTimeTableList;
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
