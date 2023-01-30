@@ -3,6 +3,7 @@ package com.example.relayRun.config;
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.exception.JwtAccessDeniedHandler;
 import com.example.relayRun.jwt.exception.JwtAuthenticationEntryPoint;
+import com.example.relayRun.user.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +19,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -65,6 +67,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .apply(new JwtSecurityConfig(tokenProvider))
+
+                // OAuth2 로그인 설정
+                .and()
+                .oauth2Login()
+                .userInfoEndpoint()
+                // 소셜 로그인 성공 시 후속 조치를 진행할 클래스
+                .userService(customOAuth2UserService);
     }
 }
