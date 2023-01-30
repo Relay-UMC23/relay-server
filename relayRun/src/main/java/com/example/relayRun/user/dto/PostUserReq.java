@@ -1,5 +1,8 @@
 package com.example.relayRun.user.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import lombok.*;
 
 import javax.management.relation.Role;
@@ -9,10 +12,16 @@ import javax.management.relation.Role;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostUserReq {
+    @ApiModelProperty(hidden = true)
     private Long userIdx;
+
     private String name;
+
     private String email;
+
     private String pwd;
+
+    @ApiModelProperty(hidden = true)
     private Role role;
 
     @Builder

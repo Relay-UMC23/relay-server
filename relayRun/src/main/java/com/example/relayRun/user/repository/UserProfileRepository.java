@@ -13,5 +13,5 @@ import java.util.Optional;
 public interface UserProfileRepository extends JpaRepository<UserProfileEntity, Long> {
     Optional<UserProfileEntity> findByUserProfileIdx(Long userProfileIdx);
     List<UserProfileEntity> findAllByUserIdx(UserEntity user);
-    UserProfileEntity findByUserIdx(UserEntity user);
+    Optional<UserProfileEntity> findByUserIdx(UserEntity user);
 }

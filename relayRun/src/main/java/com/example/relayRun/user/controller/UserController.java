@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @ApiOperation(value = "로그인", notes ="bearer Token에 access Token 넣어주세요!")
+    @ApiOperation(value = "로그인", notes ="이메일과 비밀번호만 입력해주세요!!")
     @PostMapping("/logIn")
     public BaseResponse<TokenDto> logIn(@RequestBody PostLoginReq user) {
         if (user.getEmail().length() == 0 || user.getEmail() == null) {
@@ -63,6 +63,8 @@ public class UserController {
         }
     }
 
+
+    @ApiOperation(value = "유저 정보 받아오기", notes = "토큰 정보를 통해 해당 유저의 이메일과 이름을 받아옵니다")
     @GetMapping("/")
     public BaseResponse<GetUserRes> getInfo(Principal principal) {
         try{
@@ -93,12 +95,12 @@ public class UserController {
             @ApiResponse(code = 404, message = "서버 문제 발생"),
             @ApiResponse(code = 500, message = "페이지를 찾을 수 없습니다")
     })
-    @ApiOperation(value = "유저 프로필 목록 조회", notes ="유저가 생성한 프로필 리스트 조회하는 API" +
-            "Bearer Token에 access token 넣어주세요!")
+    @ApiOperation(value = "유저 프로필 목록 조회", notes ="유저가 생성한 프로필 리스트 조회하는 API\n" +
+            "헤더에 access token 넣어주세요!")
     @GetMapping("/profileList")
-    public BaseResponse<List<GetProfileRes>> viewProfile(Principal principal) {
+    public BaseResponse<List<GetProfileListRes>> viewProfile(Principal principal) {
         try{
-            List<GetProfileRes> getProfileRes = userProfileService.viewProfile(principal);
+            List<GetProfileListRes> getProfileRes = userProfileService.viewProfile(principal);
             return new BaseResponse<>(getProfileRes);
         }
         catch (BaseException e) {
@@ -129,6 +131,17 @@ public class UserController {
     }
 
     @ResponseBody
+    @ApiOperation(value = "알람 수신 변경", notes ="알람 수신을 변경하고자 하는 유저의 프로필 idx 식별자를 Path variable에 담아주세요!")
+    @PatchMapping("/changeAlarm/{profileIdx}")
+    public BaseResponse<String> changeAlarm(Principal principal, @PathVariable("profileIdx") Long profileIdx) {
+        try{
+            this.userService.changeAlarm(principal, profileIdx);
+            return new BaseResponse<>("알람 설정 변경을 완료했습니다.");
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+    
     @ApiOperation(value = "유저 프로필 세부 조회", notes ="Path variable로 상세 조회할 프로필 Idx 식별자 넣어주세요!")
     @GetMapping("/profileList/{profileIdx}")
     public BaseResponse<GetProfileRes> getUserProfile(Principal principal, @PathVariable("profileIdx") Long profileIdx) throws BaseException {
@@ -157,5 +170,13 @@ public class UserController {
         } else {
             return new BaseResponse<>("인증번호 인증에 실패하였습니다.");
         }
+    }
+
+    @ResponseBody
+    @PatchMapping("/changeProfile")
+    @ApiOperation(value="프로필 변경", notes="프로필 닉네임, 이미지(아바타), 상태 메세지 중 변경할 것들을 선택해서 Body에 담아주세요!")
+    public BaseResponse<String> changeProfile (Principal principal, @RequestBody PatchProfileReq profileReq) throws BaseException {
+        this.userProfileService.changeProfile(principal, profileReq);
+        return new BaseResponse<>("프로필 변경을 완료했습니다.");
     }
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum BaseResponseStatus {
     SUCCESS(true, 1000, "요청에 성공하였습니다."),
+    EMPTY_TOKEN(false, 1001, "토큰을 제대로 입력해주세요."),
     DUPLICATE_NICKNAME(false, 2000, "닉네임이 중복되었습니다."),
     DUPLICATE_EMAIL(false, 2001, "이메일이 중복되었습니다."),
     EMPTY_JWT(false, 2002, "JWT를 입력해주세요."),
@@ -16,8 +17,11 @@ public enum BaseResponseStatus {
     FAILED_TO_SEARCH(false, 2008, "검색을 실패하였습니다."),
     FAILED_TO_FIND_URL(false, 2009,"요청할 수 없는 url입니다."),
 
-    // 달리기단
+    // 달리기단;
     RECORD_UNAVAILABLE(false, 2100,"존재하지 않는 기록입니다."),
+    INVALID_DATE_FORMAT(false, 2101, "yyyy-mm-dd의 날짜 형식을 입력해주세요."),
+
+    CLUB_UNAVAILABLE(false, 2200, "존재하지 않는 그룹입니다."),
 
     FAILED_TO_FIND_USER(false, 2010, "유효하지 않은 인증 코드입니다."),
     /*
@@ -36,6 +40,13 @@ public enum BaseResponseStatus {
     POST_USERS_EMPTY_NAME(false, 4779,"이름을 입력해주세요"),
 
     POST_RECORD_INVALID_CLUB_ACCESS(false, 4900, "그룹에 가입되지 않은 프로필입니다."),
+    POST_RECORD_INVALID_RECORD_ID(false, 4901, "유효하지 않은 레코드 아이디입니다."),
+    POST_PARSE_ERROR(false, 4902, "포인트 형식에 맞지 않습니다."),
+
+    POST_RECORD_NO_TIMETABLE(false, 4903, "기록에 맞는 시간표가 없습니다."),
+    POST_RECORD_ALREADY_FINISH(false, 4904, "이미 끝난 기록입니다."),
+    POST_RECORD_NO_PROFILE_IDX(false, 4905, "존재하지 않는 프로필 아이디입니다."),
+    POST_RECORD_NOT_MATCH_PARAM_PRINCIPAL(false, 4906, "요청한 프로필 아이디와 로그인 아이디가 일치하지 않습니다."),
     POST_USERS_INVALID_EMAIL(false, 5000, "이메일 양식이 맞지 않습니다."),
     POST_USERS_INVALID_PWD(false, 5001, "비밀번호 양식이 맞지 않습니다."),
     POST_REVIEW_IMG_ERROR(false, 5001, "리뷰 이미지 에러입니다."),

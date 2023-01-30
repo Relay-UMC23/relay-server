@@ -15,7 +15,6 @@ import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +55,7 @@ public class MemberStatusService {
             //신청 대상 그룹 정보
             Optional<ClubEntity> club = clubRepository.findById(clubIdx);
             if(club.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.CLUB_EMPTY);
+                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
             }
 
             //member_status 등록
@@ -101,7 +100,7 @@ public class MemberStatusService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetTimeTableListRes> getTimeTables(Long clubIdx) throws BaseException {
+    public List<GetTimeTableListRes> getTimeTablesByClubIdx(Long clubIdx) throws BaseException {
         try {
             //1. clubIdx로 memberStatus 조회
             List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByClubIdx_ClubIdx(clubIdx);
@@ -155,6 +154,30 @@ public class MemberStatusService {
             Long memberStatusIdx = memberStatusEntityList.get(0).getMemberStatusIdx();
             List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
 
+            List<GetTimeTableListRes> timeTableList = new ArrayList<>();
+
+            for(TimeTableEntity timeTableEntity : timeTableEntityList) {
+                GetTimeTableListRes timeTable = GetTimeTableListRes.builder()
+                        .timeTableIdx(timeTableEntity.getTimeTableIdx())
+                        .day(timeTableEntity.getDay())
+                        .start(timeTableEntity.getStart())
+                        .end(timeTableEntity.getEnd())
+                        .goal(timeTableEntity.getGoal())
+                        .goalType(timeTableEntity.getGoalType())
+                        .build();
+
+                timeTableList.add(timeTable);
+            }
+            return timeTableList;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+        }
+    }
+
+    @Transactional
+    public List<GetTimeTableListRes> getTimeTablesByMemberStatusIdx(Long memberStatusIdx) throws BaseException {
+        try {
+            List<TimeTableEntity> timeTableEntityList = timeTableRepository.findByMemberStatusIdx_MemberStatusIdx(memberStatusIdx);
             List<GetTimeTableListRes> timeTableList = new ArrayList<>();
 
             for(TimeTableEntity timeTableEntity : timeTableEntityList) {

@@ -6,8 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
@@ -19,13 +18,13 @@ public class GetTimeTableListRes {
     @ApiModelProperty(example = "요일")
     private Integer day;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss")
     @ApiModelProperty(example = "시작 시간")
-    private LocalDateTime start;
+    private LocalTime start;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="HH:mm:ss")
     @ApiModelProperty(example = "종료 시간")
-    private LocalDateTime end;
+    private LocalTime end;
 
     @ApiModelProperty(example = "목표 수치")
     private Float goal;
