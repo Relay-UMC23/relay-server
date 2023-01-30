@@ -36,6 +36,18 @@ public class MemberStatusController {
         }
     }
 
+    @ApiOperation(value = "시간표 등록", notes = "path variable로 직전에 반환 받은 memberStatusIdx, body로는 신청자의 시간표 정보를 리스트 형식으로 보내면 시간표 등록이 완료됩니다.")
+    @ResponseBody
+    @PostMapping("/{memberStatusIdx}/time-tables")
+    public BaseResponse<String> createTimeTable(@ApiParam(value = "직전에 반환 받은 memberStatusIdx") @PathVariable Long memberStatusIdx, @ApiParam(value = "신청자의 시간표 정보(리스트 형식)") @Valid @RequestBody PostTimeTableReq postTimeTableReq) {
+        try {
+            memberStatusService.createTimeTable(memberStatusIdx, postTimeTableReq);
+            return new BaseResponse<>("시간표 등록 완료");
+        } catch (BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
     @ApiOperation(value = "그룹의 전체 시간표 조회", notes = "path variable로 조회하고자 하는 그룹의 clubIdx를 보내면 해당 그룹의 전체 시간표를 리스트 형식으로 반환합니다.")
     @ResponseBody
     @GetMapping("/{clubIdx}/time-tables")
