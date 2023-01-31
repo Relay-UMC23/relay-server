@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -70,7 +71,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             UserEntity newUser = UserEntity.builder()
                     .name(oAuth2Attribute.getName())
                     .email(oAuth2Attribute.getEmail())
-                    .pwd("asdf1234")
+                    .pwd(new BCryptPasswordEncoder().encode("1234"))
                     .loginType(LoginType.valueOf(registrationId.toUpperCase()))
                     .role(Role.ROLE_USER)
                     .build();
