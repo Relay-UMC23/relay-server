@@ -111,4 +111,15 @@ public class RunningRecordController {
             return new BaseResponse(e.getStatus());
         }
     }
+
+    @ApiOperation(value="해당되는 월의 날짜별 개인 기록 요약", notes="bearer에 조회할 유저의 토큰, query에 년과 월을 입력해주세요 ex record/summary/?year=2023&month=1")
+    @GetMapping("/summary")
+    public BaseResponse<List<GetDailyRes>> getCalender(Principal principal, @RequestParam("year") Integer year, @RequestParam("month") Integer month) {
+        try {
+            List<GetDailyRes> calender = runningRecordService.getCalender(principal, year, month);
+            return new BaseResponse<>(calender);
+        } catch (BaseException e) {
+            return new BaseResponse(e.getStatus());
+        }
+    }
 }
