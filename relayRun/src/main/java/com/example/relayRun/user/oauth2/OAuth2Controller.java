@@ -18,4 +18,14 @@ public class OAuth2Controller {
 
         return map;
     }
+
+    @GetMapping("/loginFail")
+    @ResponseBody
+    public Map<String, String> login(@RequestParam(value = "error") String error) {
+        Map<String, String> map = new HashMap<>();
+        map.put("error", error);
+
+        return map;
+    }
+
 }
