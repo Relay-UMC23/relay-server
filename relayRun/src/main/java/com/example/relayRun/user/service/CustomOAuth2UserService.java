@@ -7,6 +7,7 @@ import com.example.relayRun.user.oauth2.OAuth2Attribute;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.Role;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,15 +25,11 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
-
-    public CustomOAuth2UserService(UserRepository userRepository, UserProfileRepository userProfileRepository) {
-        this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
-    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -88,10 +85,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     .build();
             userProfileRepository.save(userProfileEntity);
 
-            return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(newUser.getRole().toString())), oAuth2Attribute.getAttributes(), key);
+//            return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(newUser.getRole().toString())), oAuth2Attribute.getAttributes(), key);
         }
-        log.info("just login");
-        DefaultOAuth2User defaultOAuth2User = new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(savedUser.get().getRole().toString())), oAuth2Attribute.getAttributes(), key);
+
+        DefaultOAuth2User defaultOAuth2User = new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), oAuth2Attribute.getAttributes(), key);
         log.info("defaultOauth2User: " + defaultOAuth2User);
 
         return defaultOAuth2User;
