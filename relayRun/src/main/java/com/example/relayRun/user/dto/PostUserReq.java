@@ -25,8 +25,7 @@ public class PostUserReq {
     private Role role;
 
     @Builder
-    public PostUserReq(Long userIdx, String name, String email, String pwd){
-        this.userIdx = userIdx;
+    public PostUserReq(String name, String email, String pwd){
         this.name = name;
         this.email = email;
         this.pwd = pwd;

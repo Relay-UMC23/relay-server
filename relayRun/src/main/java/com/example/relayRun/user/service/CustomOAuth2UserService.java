@@ -3,7 +3,7 @@ package com.example.relayRun.user.service;
 import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
-import com.example.relayRun.user.oauth2.OAuth2UserInfo;
+import com.example.relayRun.user.oauth2.OAuth2Attribute;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.Role;
@@ -59,20 +59,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String key = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
         // user 정보 담긴 attribute
         Map<String, Object> attributes = user.getAttributes();
-        OAuth2UserInfo userInfo = OAuth2UserInfo.builder()
+        OAuth2Attribute oAuth2Attribute = OAuth2Attribute.builder()
                 .attributes(attributes)
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .imgURL((String) attributes.get("picture"))
                 .build();
 
-        Optional<UserEntity> savedUser = userRepository.findByEmail(userInfo.getEmail());
+        Optional<UserEntity> savedUser = userRepository.findByEmail(oAuth2Attribute.getEmail());
         if (savedUser.isEmpty()) {
             log.info("회원가입 진행");
             // 유저 회원가입
             UserEntity newUser = UserEntity.builder()
-                    .name(userInfo.getName())
-                    .email(userInfo.getEmail())
+                    .name(oAuth2Attribute.getName())
+                    .email(oAuth2Attribute.getEmail())
                     .pwd("asdf1234")
                     .loginType(LoginType.valueOf(registrationId.toUpperCase()))
                     .role(Role.ROLE_USER)
@@ -82,16 +82,19 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             // 프로필 자동생성
             UserProfileEntity userProfileEntity = UserProfileEntity.builder()
                     .nickName("기본 닉네임")
-                    .imgURL(userInfo.getImgURL())
+                    .imgURL(oAuth2Attribute.getImgURL())
                     .statusMsg("안녕하세요")
                     .userIdx(newUser)
                     .build();
             userProfileRepository.save(userProfileEntity);
 
-            return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(newUser.getRole().toString())), userInfo.getAttributes(), key);
+            return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(newUser.getRole().toString())), oAuth2Attribute.getAttributes(), key);
         }
+        log.info("just login");
+        DefaultOAuth2User defaultOAuth2User = new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(savedUser.get().getRole().toString())), oAuth2Attribute.getAttributes(), key);
+        log.info("defaultOauth2User: " + defaultOAuth2User);
 
-        return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(savedUser.get().getRole().toString())), userInfo.getAttributes(), key);
+        return defaultOAuth2User;
     }
 }
 
