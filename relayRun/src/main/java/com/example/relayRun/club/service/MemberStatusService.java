@@ -36,7 +36,7 @@ public class MemberStatusService {
     }
 
     @Transactional
-    public Long createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
+    public void createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
         try {
             Long userProfileIdx = memberStatus.getUserProfileIdx();
             Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
@@ -63,21 +63,22 @@ public class MemberStatusService {
 
             memberStatusRepository.save(memberStatusEntity);
 
-            return memberStatusEntity.getMemberStatusIdx();
+            Long memberStatusIdx = memberStatusEntity.getMemberStatusIdx();
+            List<TimeTableDTO> timeTables = memberStatus.getTimeTables();
+
+            this.createTimeTable(memberStatusIdx, timeTables);
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.POST_MEMBER_STATUS_FAIL);
         }
     }
 
     @Transactional
-    public void createTimeTable(Long memberStatusIdx, PostTimeTableReq postTimeTableReq) throws BaseException {
+    public void createTimeTable(Long memberStatusIdx, List<TimeTableDTO> timeTables) throws BaseException {
         try {
             Optional<MemberStatusEntity> memberStatusEntity = memberStatusRepository.findById(memberStatusIdx);
             if(memberStatusEntity.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
             }
-
-            List<TimeTableDTO> timeTables = postTimeTableReq.getTimeTables();
 
             for (int i = 0; i < timeTables.size(); i++) {
                 TimeTableEntity timeTableEntity = TimeTableEntity.builder()
