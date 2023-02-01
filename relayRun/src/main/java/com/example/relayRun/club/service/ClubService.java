@@ -19,6 +19,7 @@ import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -36,15 +37,18 @@ public class ClubService {
     private final UserProfileRepository userProfileRepository;
     private final MemberStatusRepository memberStatusRepository;
     private final TimeTableRepository timeTableRepository;
+    private final MemberStatusService memberStatusService;
 
     public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository,
-                       MemberStatusRepository memberStatusRepository, TimeTableRepository timeTableRepository) {
+                       MemberStatusRepository memberStatusRepository, TimeTableRepository timeTableRepository,
+                       MemberStatusService memberStatusService) {
 
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.memberStatusRepository = memberStatusRepository;
         this.timeTableRepository = timeTableRepository;
+        this.memberStatusService = memberStatusService;
     }
 
     public List<GetClubListRes> getClubs() throws BaseException {
@@ -116,7 +120,8 @@ public class ClubService {
     }
 
     // 그룹 생성
-    public Long makesClub(Principal principal, Long userProfileIdx, PostClubReq club) throws BaseException {
+    @Transactional
+    public void makesClub(Principal principal, Long userProfileIdx, PostClubReq club) throws BaseException {
         // 로그인한 유저 userIdx 가져오기
         Optional<UserEntity> optional = userRepository.findByEmail(principal.getName());
         if (optional.isEmpty()) {
@@ -159,8 +164,7 @@ public class ClubService {
 
         memberStatusRepository.save(memberStatusEntity);
 
-        return memberStatusEntity.getMemberStatusIdx();
+        memberStatusService.createTimeTable(memberStatusEntity.getMemberStatusIdx(), club.getTimeTable());
     }
-
 
 }
