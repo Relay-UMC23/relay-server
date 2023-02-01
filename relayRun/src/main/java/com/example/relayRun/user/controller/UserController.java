@@ -178,4 +178,12 @@ public class UserController {
             return new BaseResponse<>("인증번호 인증에 실패하였습니다.");
         }
     }
+
+    @ResponseBody
+    @PatchMapping("/changeProfile")
+    @ApiOperation(value="프로필 변경", notes="프로필 닉네임, 이미지(아바타), 상태 메세지 중 변경할 것들을 선택해서 Body에 담아주세요!")
+    public BaseResponse<String> changeProfile (Principal principal, @RequestBody PatchProfileReq profileReq) throws BaseException {
+        this.userProfileService.changeProfile(principal, profileReq);
+        return new BaseResponse<>("프로필 변경을 완료했습니다.");
+    }
 }

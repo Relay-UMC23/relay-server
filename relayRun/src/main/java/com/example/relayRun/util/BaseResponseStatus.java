@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum BaseResponseStatus {
     SUCCESS(true, 1000, "요청에 성공하였습니다."),
-    EMPTY_TOKEN(false, 1001, "토큰을 제대로 입력해주세요."),
+    EMPTY_TOKEN(false, 1001, "토큰을 확인해주세요."),
     DUPLICATE_NICKNAME(false, 2000, "닉네임이 중복되었습니다."),
     DUPLICATE_EMAIL(false, 2001, "이메일이 중복되었습니다."),
     EMPTY_JWT(false, 2002, "JWT를 입력해주세요."),

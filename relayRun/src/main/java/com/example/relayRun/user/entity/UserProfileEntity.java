@@ -47,11 +47,25 @@ public class UserProfileEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "hostIdx", orphanRemoval = true)
     private ClubEntity club;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "userProfileIdx", orphanRemoval = true)
     List<MemberStatusEntity> memberStatusEntities = new ArrayList<>();
+
+    public void changeNickName(String nickName){
+        this.nickName = nickName;
+    }
+
+    public void changeImgUrl(String imgURL){
+        this.imgURL = imgURL;
+    }
+
+    public void changeStatusMsg(String statusMsg){
+        this.statusMsg = statusMsg;
+    }
+
     public void setIsAlarmOn (String isAlarmOn){
         this.isAlarmOn = isAlarmOn;
     }
