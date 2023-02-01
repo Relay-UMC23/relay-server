@@ -1,8 +1,11 @@
 package com.example.relayRun.config;
 
+import com.example.relayRun.jwt.JwtFilter;
+import com.example.relayRun.user.oauth2.OAuth2SuccessHandler;
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.exception.JwtAccessDeniedHandler;
 import com.example.relayRun.jwt.exception.JwtAuthenticationEntryPoint;
+import com.example.relayRun.jwt.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -18,18 +22,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler successHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-//    // h2 database 테스트가 원활하도록 관련 API 들은 전부 무시
-//    @Override
-//    public void configure(WebSecurity web) {
-//        web.ignoring()
-//                .antMatchers("/h2-console/**", "/favicon.ico");
-//    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -65,6 +64,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .apply(new JwtSecurityConfig(tokenProvider))
+
+                // OAuth2 로그인 설정
+                .and()
+                .oauth2Login()
+                // 로그인 성공 시 핸들러
+                .successHandler(successHandler)
+                // 소셜 로그인 시 후속 조치를 진행할 클래스
+                .userInfoEndpoint()
+                .userService(customOAuth2UserService);
     }
 }

@@ -60,4 +60,9 @@ public class UserEntity extends BaseTimeEntity {
     public void changePwd(String pwd){
         this.pwd = pwd;
         }
+
+    public UserEntity update(String name){
+        this.name = name;
+        return this;
+    }
 }
