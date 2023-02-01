@@ -79,8 +79,6 @@ public class KakaoService {
         OAuthToken oAuthToken = null;
         try {
             oAuthToken = objectMapper.readValue(response.getBody(), OAuthToken.class);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -114,8 +112,6 @@ public class KakaoService {
         KakaoProfile kakaoProfile = null;
         try {
             kakaoProfile = objectMapper.readValue(response.getBody(), KakaoProfile.class);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
