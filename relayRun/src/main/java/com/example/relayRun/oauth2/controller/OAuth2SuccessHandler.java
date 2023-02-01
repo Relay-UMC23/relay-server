@@ -1,4 +1,4 @@
-package com.example.relayRun.user.oauth2;
+package com.example.relayRun.oauth2.controller;
 
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;

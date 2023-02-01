@@ -1,9 +1,9 @@
-package com.example.relayRun.user.service;
+package com.example.relayRun.oauth2.service;
 
 import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
-import com.example.relayRun.user.oauth2.OAuth2Attribute;
+import com.example.relayRun.oauth2.dto.OAuth2Attribute;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.Role;
@@ -21,7 +21,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -34,10 +33,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-//        OAuth2User user = super.loadUser(userRequest);
         OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
-        log.info("oAuth2User: " + oAuth2User);
+
         try {
             return process(userRequest, oAuth2User);
 //        } catch (AuthenticationException ae) {
@@ -50,19 +48,13 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private OAuth2User process(OAuth2UserRequest userRequest, OAuth2User user) {
         // 진행중인 서비스 구분 (ex. Google, Naver, Kakao ...)
-        String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        log.info("registrationId(google): " + registrationId);
+        String provider = userRequest.getClientRegistration().getRegistrationId();
 
         // 로그인시 키값
         String key = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
-        // user 정보 담긴 attribute
-        Map<String, Object> attributes = user.getAttributes();
-        OAuth2Attribute oAuth2Attribute = OAuth2Attribute.builder()
-                .attributes(attributes)
-                .name((String) attributes.get("name"))
-                .email((String) attributes.get("email"))
-                .imgURL((String) attributes.get("picture"))
-                .build();
+
+        // user 정보 담긴 attribute object 생성
+        OAuth2Attribute oAuth2Attribute = OAuth2Attribute.buildInfo(provider, user.getAttributes());
 
         Optional<UserEntity> savedUser = userRepository.findByEmail(oAuth2Attribute.getEmail());
         if (savedUser.isEmpty()) {
@@ -72,7 +64,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     .name(oAuth2Attribute.getName())
                     .email(oAuth2Attribute.getEmail())
                     .pwd(new BCryptPasswordEncoder().encode("1234"))
-                    .loginType(LoginType.valueOf(registrationId.toUpperCase()))
+                    .loginType(LoginType.valueOf(provider.toUpperCase()))
                     .role(Role.ROLE_USER)
                     .build();
             newUser = userRepository.save(newUser);
@@ -85,12 +77,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     .userIdx(newUser)
                     .build();
             userProfileRepository.save(userProfileEntity);
-
-//            return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(newUser.getRole().toString())), oAuth2Attribute.getAttributes(), key);
         }
 
         DefaultOAuth2User defaultOAuth2User = new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), oAuth2Attribute.getAttributes(), key);
-        log.info("defaultOauth2User: " + defaultOAuth2User);
 
         return defaultOAuth2User;
     }

@@ -1,4 +1,4 @@
-package com.example.relayRun.user.oauth2;
+package com.example.relayRun.oauth2.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
