@@ -393,55 +393,5 @@ public class UserService {
         return true;
     }
 
-    public TokenDto kakaoLogin(String kakaoAccessToken) throws BaseException {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + kakaoAccessToken);
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        //카카오 프로필 가져오기
-        HttpEntity<MultiValueMap<String, String>> kakaoProfileRequest = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(
-                "https://kapi.kakao.com/v2/user/me",
-                HttpMethod.POST,
-                kakaoProfileRequest,
-                String.class
-        );
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        KakaoProfile kakaoProfile = null;
-        try {
-            kakaoProfile = objectMapper.readValue(response.getBody(), KakaoProfile.class);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        String kakaoName = kakaoProfile.getProperties().getNickname();
-        String kakaoEmail = kakaoProfile.getKakao_account().getEmail();
-
-        if(kakaoName == null || kakaoEmail == null) {
-            throw new BaseException(BaseResponseStatus.FAILED_TO_GET_KAKAO_PROFILE);
-        }
-
-        //존재하지 않는 이메일일 경우 회원가입 진행, 존재하는 경우 로그인 진행
-        if(!isHaveEmail(kakaoEmail)) {
-            PostUserReq postUserReq = PostUserReq.builder()
-                    .name(kakaoName)
-                    .email(kakaoEmail)
-                    .pwd("abcde12345")  //임의의 비밀번호
-                    .build();
-
-            return signIn(postUserReq);
-        } else {
-            PostLoginReq postLoginReq = new PostLoginReq(
-                    kakaoEmail,
-                    "abcde12345");  //임의의 비밀번호
-
-            return logIn(postLoginReq);
-        }
-    }
-
 }
 

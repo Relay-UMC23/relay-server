@@ -181,19 +181,4 @@ public class UserController {
         return new BaseResponse<>("프로필 변경을 완료했습니다.");
     }
 
-    @ResponseBody
-    @PostMapping("/kakao-login")
-    @ApiOperation(value = "카카오 소셜 로그인", notes = "body로 카카오에서 받은 토큰을 kakaoAccessToken 변수에 담아 보내주세요.")
-    public BaseResponse<TokenDto> kakaoLogin(@RequestBody Map<String, String> kakaoAccessToken) {
-        String accessToken = kakaoAccessToken.get("kakaoAccessToken");
-        if (accessToken.length() == 0 || accessToken == null) {
-            return new BaseResponse<>(BaseResponseStatus.KAKAO_ACCESS_TOKEN_EMPTY);
-        }
-        try {
-            TokenDto token = userService.kakaoLogin(accessToken);
-            return new BaseResponse<>(token);
-        } catch (BaseException e) {
-            return new BaseResponse<>(e.getStatus());
-        }
-    }
 }
