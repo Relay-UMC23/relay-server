@@ -53,7 +53,7 @@ public class OAuth2Attribute {
                 .name((String) response.get("name"))
                 .email((String) response.get("email"))
                 .imgURL((String) response.get("profile_image"))
-                .attributes(response)
+                .attributes(attributes)
                 .build();
     }
 
