@@ -42,6 +42,18 @@ public class UserProfileEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
+    public void changeNickName(String nickName){
+        this.nickName = nickName;
+    }
+
+    public void changeImgUrl(String imgURL){
+        this.imgURL = imgURL;
+    }
+
+    public void changeStatusMsg(String statusMsg){
+        this.statusMsg = statusMsg;
+    }
+
     public void setIsAlarmOn (String isAlarmOn){
         this.isAlarmOn = isAlarmOn;
     }
