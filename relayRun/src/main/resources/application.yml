@@ -8,6 +8,9 @@ spring:
       ddl-auto: update
     generate-ddl: false
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 server:
   port: 9000

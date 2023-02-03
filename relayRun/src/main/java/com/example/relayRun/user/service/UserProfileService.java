@@ -35,7 +35,7 @@ public class UserProfileService {
 
     public GetUserProfileClubRes getUserProfileClub(Long userProfileIdx) throws BaseException {
         ClubEntity clubEntity = null;
-        List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(userProfileIdx);
+        List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(userProfileIdx, "active");
         for (MemberStatusEntity memberStatusEntity : memberStatusEntityList) {
             if (memberStatusEntity.getApplyStatus().equals("ACCEPTED")) {
                 clubEntity = memberStatusEntity.getClubIdx();
@@ -116,5 +116,24 @@ public class UserProfileService {
                 .build();
         userProfileEntity = userProfileRepository.save(userProfileEntity);
         return userProfileEntity.getUserProfileIdx();
+    }
+
+    public void changeProfile(Principal principal, PatchProfileReq profileReq) throws BaseException {
+        if(userRepository.findByEmail(principal.getName()).isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        Optional<UserEntity> UserEntity = userRepository.findByEmail(principal.getName());
+        Optional<UserProfileEntity> profile = userProfileRepository.findByUserIdx(UserEntity.get());
+        UserProfileEntity newProfile = profile.get();
+        if (!(profileReq.getNickName() == null || profileReq.getNickName().length() == 0)) {
+            newProfile.changeNickName(profileReq.getNickName());
+        }
+        if (!(profileReq.getImgUrl() == null || profileReq.getImgUrl().length() == 0)) {
+            newProfile.changeImgUrl(profileReq.getImgUrl());
+        }
+        if (!(profileReq.getStatusMsg() == null || profileReq.getStatusMsg().length() == 0)) {
+            newProfile.changeStatusMsg(profileReq.getStatusMsg());
+        }
+        userProfileRepository.save(newProfile);
     }
 }
