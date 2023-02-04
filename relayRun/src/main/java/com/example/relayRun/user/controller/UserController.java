@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -141,7 +142,7 @@ public class UserController {
             return new BaseResponse<>(e.getStatus());
         }
     }
-    
+
     @ApiOperation(value = "유저 프로필 세부 조회", notes ="Path variable로 상세 조회할 프로필 Idx 식별자 넣어주세요!")
     @GetMapping("/profileList/{profileIdx}")
     public BaseResponse<GetProfileRes> getUserProfile(Principal principal, @PathVariable("profileIdx") Long profileIdx) throws BaseException {
@@ -179,4 +180,5 @@ public class UserController {
         this.userProfileService.changeProfile(principal, profileReq);
         return new BaseResponse<>("프로필 변경을 완료했습니다.");
     }
+
 }
