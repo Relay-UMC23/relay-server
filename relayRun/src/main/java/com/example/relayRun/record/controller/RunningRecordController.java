@@ -6,17 +6,14 @@ import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
 
-import java.security.Principal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -32,9 +29,9 @@ public class RunningRecordController {
 
     // 달리기 시작
     @PostMapping("/start")
-    @ApiOperation(value="달리기 시작", notes="profileIdx, 속한 clubIdx 요청" +
-            "응답 받은 runningRecordIdx를 가지고 있다가 달리기 종료, 일시 정지, 다시 달리기 할 때 " +
-            "보내 주셔야 합니다.")
+    @ApiOperation(value="달리기 시작", notes="Request Body: profileIdx" +
+            "응답 받은 runningRecordIdx를 가지고 있다가 달리기 종료시 보내 주셔야 합니다." +
+            "Response: runningRecordIdx, 현재 시간 기준 시간표 정보(시작 시간, 끝시간, 목표 타입, 목표량)")
     public BaseResponse<PostRunningInitRes> startRunning(Principal principal, @RequestBody PostRunningInitReq runningInitReq) {
         try{
             PostRunningInitRes result = runningRecordService.startRunning(principal, runningInitReq);
@@ -60,16 +57,18 @@ public class RunningRecordController {
         }
     }
 
-    // member_status_idx와 오늘 날짜로 조회 테스트 API
-    @ApiOperation(value="member_status_idx와 오늘 날짜로 조회", notes="Request Parameter : mid, date로 각 값을 입력해주세요")
+    // profile idx와 오늘 날짜로 조회
+    @ApiOperation(value="해당 프로필 일별 기록 조회", notes="위치 원할시 token 필요, query로는 프로필 idx, date를 입력해주세요 ex) record/?idx=1&date=2023-01-26\n" +
+            "token이 없거나 해당 유저가 아닐 때는 위치 list가 null로 반환됩니다!")
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<List<GetRecordWithoutLocationRes>> getRecordWithoutLocation(@RequestParam("mid") Long memberStatusIdx, @RequestParam("date") String date) {
+    public BaseResponse<GetRecordByIdxRes> getRecordWithoutLocation(
+            Principal principal,
+            @ApiParam(value = "조회하고자 하는 유저 프로필 식별자")@RequestParam("idx") Long profileIdx,
+            @ApiParam(value = "조회 날짜 | String | yyyy-MM-dd")@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date
+    ) {
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime startDate = LocalDateTime.parse(date + " 00:00:00", formatter);
-            LocalDateTime endDate = LocalDateTime.parse(date + " 23:59:59", formatter);
-            List<GetRecordWithoutLocationRes> rec = runningRecordService.getRecordWithoutLocation(memberStatusIdx, startDate, endDate);
+            GetRecordByIdxRes rec = runningRecordService.getRecordByDate(principal, profileIdx, date);
             return new BaseResponse<>(rec);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());
@@ -77,22 +76,25 @@ public class RunningRecordController {
     }
 
     // 기록 세부 조회
-    @ApiOperation(value="기록 idx로 조회", notes="path variable에 조회할 기록의 idx를 입력해주세요")
-    @GetMapping("/{idx}")
-    public BaseResponse<GetRecordByIdxRes> getRecordByIdx(@PathVariable("idx") Long idx) {
+    @ApiOperation(value="기록 idx로 조회 -> 임시, 날짜별 조회를 이용", notes="path variable에 조회할 기록의 idx를 입력해주세요")
+    @GetMapping("/{recordIdx}")
+    public BaseResponse<GetRecordByIdxRes> getRecordByIdx(
+            Principal principal,
+            @ApiParam(value = "조회하고자 하는 기록 식별자")@PathVariable("recordIdx") Long recordIdx
+    ) {
         try {
-            GetRecordByIdxRes rec = runningRecordService.getRecordByIdx(idx);
+            GetRecordByIdxRes rec = runningRecordService.getRecordByIdx(principal, recordIdx);
             return new BaseResponse<>(rec);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());
         }
     }
 
-    // 하루 기록 조회
-    @ApiOperation(value="개인 기록 일별 요약", notes="bearer에 조회할 유저의 토큰, query에 조회 날짜를 입력해주세요 ex record/daily/?date=2023-01-26")
-    @GetMapping("/daily")
-    public BaseResponse<GetDailyRes> getDailyRecord(Principal principal,
-                                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+    @ApiOperation(value="개인 기록 일별 요약(요약이므로 세부 기록 조회를 위해서는 날짜별 조회 API 사용, 프로필이 많아지는 경우에만 사용)", notes="bearer에 조회할 유저의 토큰, query에 조회 날짜를 입력해주세요 ex record/summary/?date=2023-01-26")
+    @GetMapping("/summary")
+    public BaseResponse<GetDailyRes> getDailyRecord(
+            Principal principal,
+            @ApiParam(value = "조회 날짜 | String | yyyy-MM-dd")@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         try {
             GetDailyRes daily = runningRecordService.getDailyRecord(principal, date);
             return new BaseResponse<>(daily);
@@ -101,22 +103,44 @@ public class RunningRecordController {
         }
     }
 
-    @ApiOperation(value="그룹 기록 일별 요약", notes="조회할 그룹 idx를 입력해주세요, query에 조회 날짜를 입력해주세요 ex record/daily/{clubIdx}/?date=2023-01-27")
-    @GetMapping("/daily/{clubIdx}/club")
-    public BaseResponse<GetDailyRes> getDailyGroup(@PathVariable("clubIdx") Long idx, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+    @ApiOperation(value="해당 그룹 일별 기록 조회", notes="조회할 그룹 idx를 입력해주세요, query에 조회 날짜를 입력해주세요 ex record/summary/club/?clubIdx=1&date=2023-01-27")
+    @GetMapping("/summary/club")
+    public BaseResponse<GetDailyRes> getDailyGroup(
+            @ApiParam(value = "조회하고자 하는 그룹의 식별자")@RequestParam("clubIdx") Long clubIdx,
+            @ApiParam(value = "조회 날짜 | String | yyyy-MM-dd")@RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date
+    ) {
         try {
-            GetDailyRes dailyGroup = runningRecordService.getDailyGroup(idx, date);
+            GetDailyRes dailyGroup = runningRecordService.getDailyGroup(clubIdx, date);
             return new BaseResponse<>(dailyGroup);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());
         }
     }
 
-    @ApiOperation(value="해당되는 월의 날짜별 개인 기록 요약", notes="bearer에 조회할 유저의 토큰, query에 년과 월을 입력해주세요 ex record/summary/?year=2023&month=1")
-    @GetMapping("/summary")
-    public BaseResponse<List<GetDailyRes>> getCalender(Principal principal, @RequestParam("year") Integer year, @RequestParam("month") Integer month) {
+    @ApiOperation(value="해당 프로필의 월별 기록 조회", notes="조회할 프로필 idx, 년과 월을 입력해주세요 ex record/calender/?profileIdx=1&year=2023&month=1")
+    @GetMapping("/calender")
+    public BaseResponse<List<GetCalender>> getCalender(
+            @ApiParam(value = "조회하고자 하는 유저의 프로필 식별자")@RequestParam("profileIdx") Long profileIdx,
+            @ApiParam(value = "년 | Integer")@RequestParam("year") Integer year,
+            @ApiParam(value = "월 | Integer")@RequestParam("month") Integer month
+    ) {
         try {
-            List<GetDailyRes> calender = runningRecordService.getCalender(principal, year, month);
+            List<GetCalender> calender = runningRecordService.getCalender(profileIdx, year, month);
+            return new BaseResponse<>(calender);
+        } catch (BaseException e) {
+            return new BaseResponse(e.getStatus());
+        }
+    }
+
+    @ApiOperation(value="해당 그룹의 월별 기록 조회", notes="조회할 그룹 idx, 년과 월을 입력해주세요 ex record/calender/club/?clubIdx=1&year=2023&month=1")
+    @GetMapping("/calender/club")
+    public BaseResponse<List<GetCalender>> getClubCalender(
+            @ApiParam(value = "조회하고자 하는 그룹의 식별자")@RequestParam("clubIdx") Long clubIdx,
+            @ApiParam(value = "년 | Integer")@RequestParam("year") Integer year,
+            @ApiParam(value = "월 | Integer")@RequestParam("month") Integer month
+    ) {
+        try {
+            List<GetCalender> calender = runningRecordService.getClubCalender(clubIdx, year, month);
             return new BaseResponse<>(calender);
         } catch (BaseException e) {
             return new BaseResponse(e.getStatus());

@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfileEntity, Long> {
     Optional<UserProfileEntity> findByUserProfileIdx(Long userProfileIdx);
+    Optional<UserProfileEntity> findByUserProfileIdxAndStatus(Long userProfileIdx, String status);
     List<UserProfileEntity> findAllByUserIdx(UserEntity user);
     List<UserProfileEntity> findAllByUserIdxAndStatus(UserEntity user, String status);
     Optional<UserProfileEntity> findByUserIdx(UserEntity user);

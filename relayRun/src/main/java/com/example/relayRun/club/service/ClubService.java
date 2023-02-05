@@ -4,13 +4,10 @@ import com.example.relayRun.club.dto.GetClubDetailRes;
 import com.example.relayRun.club.dto.GetMemberOfClubRes;
 import com.example.relayRun.club.dto.PostClubReq;
 import com.example.relayRun.club.dto.GetClubListRes;
-import com.example.relayRun.club.dto.TimeTableDTO;
 import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.entity.MemberStatusEntity;
-import com.example.relayRun.club.entity.TimeTableEntity;
 import com.example.relayRun.club.repository.ClubRepository;
 import com.example.relayRun.club.repository.MemberStatusRepository;
-import com.example.relayRun.club.repository.TimeTableRepository;
 import com.example.relayRun.user.dto.GetMemberProfileRes;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
@@ -23,10 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.sql.Time;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,18 +29,16 @@ public class ClubService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final MemberStatusRepository memberStatusRepository;
-    private final TimeTableRepository timeTableRepository;
     private final MemberStatusService memberStatusService;
 
     public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository,
-                       MemberStatusRepository memberStatusRepository, TimeTableRepository timeTableRepository,
+                       MemberStatusRepository memberStatusRepository,
                        MemberStatusService memberStatusService) {
 
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.memberStatusRepository = memberStatusRepository;
-        this.timeTableRepository = timeTableRepository;
         this.memberStatusService = memberStatusService;
     }
 
@@ -63,7 +54,7 @@ public class ClubService {
         try {
             return clubRepository.findByNameContaining(search);
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
@@ -121,50 +112,51 @@ public class ClubService {
 
     // 그룹 생성
     @Transactional
-    public void makesClub(Principal principal, Long userProfileIdx, PostClubReq club) throws BaseException {
-        // 로그인한 유저 userIdx 가져오기
-        Optional<UserEntity> optional = userRepository.findByEmail(principal.getName());
-        if (optional.isEmpty()) {
+    public void makesClub(Principal principal, PostClubReq clubReq) throws BaseException {
+        Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+        if (optionalUserEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
-        UserEntity userIdx = optional.get();
-        // principal의 userIdx랑 userProfileIdx의 userIdx 가 같다면
-        Optional<UserProfileEntity> profileOptional = userProfileRepository.findByUserProfileIdx(userProfileIdx);
-        if (profileOptional.isEmpty()) {
+        UserEntity userEntity = optionalUserEntity.get();
+
+        Optional<UserProfileEntity> optionalUserProfileEntity = userProfileRepository.findByUserProfileIdx(clubReq.getHostIdx());
+        if (optionalUserProfileEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EMPTY);
         }
-        if (club.getName().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
-        }
-        if (club.getContent().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
-        }
-        UserProfileEntity userProfile = profileOptional.get();
-        if (!userIdx.getUserIdx().equals(userProfile.getUserIdx().getUserIdx())) {
+        UserProfileEntity userProfileEntity = optionalUserProfileEntity.get();
+
+        if (!userProfileEntity.getUserIdx().equals(userEntity)) {
             throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
         }
 
+        if (clubReq.getName().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
+        }
+        if (clubReq.getContent().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
+        }
+
         ClubEntity clubEntity = ClubEntity.builder()
-                .name(club.getName())
-                .content(club.getContent())
-                .imgURL(club.getImgURL())
-                .hostIdx(userProfile)
-                .maxNum(club.getMaxNum())
-                .level(club.getLevel())
-                .goalType(club.getGoalType())
-                .goal(club.getGoal())
+                .name(clubReq.getName())
+                .content(clubReq.getContent())
+                .imgURL(clubReq.getImgURL())
+                .hostIdx(userProfileEntity)
+                .maxNum(clubReq.getMaxNum())
+                .level(clubReq.getLevel())
+                .goalType(clubReq.getGoalType())
+                .goal(clubReq.getGoal())
                 .build();
         clubRepository.save(clubEntity);
 
         // host Member Status update
         MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
                 .clubIdx(clubEntity)
-                .userProfileIdx(profileOptional.get())
+                .userProfileIdx(optionalUserProfileEntity.get())
                 .build();
 
         memberStatusRepository.save(memberStatusEntity);
 
-        memberStatusService.createTimeTable(memberStatusEntity.getMemberStatusIdx(), club.getTimeTable());
+        memberStatusService.createTimeTable(memberStatusEntity.getMemberStatusIdx(), clubReq.getTimeTable());
     }
 
 }
