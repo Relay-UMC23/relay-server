@@ -84,26 +84,31 @@ public class ClubService {
     }
 
     public List<GetMemberOfClubRes> getMemberOfClub(Long clubIdx) throws BaseException {
-        List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findAllByClubIdx_ClubIdxAndApplyStatusAndStatus(clubIdx, "ACCEPTED", "active");
-        if (memberStatusEntityList.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+        try {
+            List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findAllByClubIdx_ClubIdxAndApplyStatusAndStatus(clubIdx, "ACCEPTED", "active");
+            if (memberStatusEntityList.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+            }
+
+            List<GetMemberOfClubRes> res = new ArrayList<>();
+            for (MemberStatusEntity memberStatusEntity : memberStatusEntityList) {
+                UserProfileEntity userProfileEntity = memberStatusEntity.getUserProfileIdx();
+                GetMemberProfileRes getMemberProfileRes = GetMemberProfileRes.builder()
+                        .userProfileIdx(userProfileEntity.getUserProfileIdx())
+                        .nickname(userProfileEntity.getNickName())
+                        .statusMsg(userProfileEntity.getStatusMsg())
+                        .imgUrl(userProfileEntity.getImgURL())
+                        .build();
+                GetMemberOfClubRes getMemberOfClubRes = GetMemberOfClubRes.builder()
+                        .memberStatusIdx(memberStatusEntity.getMemberStatusIdx())
+                        .userProfile(getMemberProfileRes)
+                        .build();
+                res.add(getMemberOfClubRes);
+            }
+            return res;
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
-        List<GetMemberOfClubRes> res = new ArrayList<>();
-        for (MemberStatusEntity memberStatusEntity : memberStatusEntityList) {
-            UserProfileEntity userProfileEntity = memberStatusEntity.getUserProfileIdx();
-            GetMemberProfileRes getMemberProfileRes = GetMemberProfileRes.builder()
-                    .userProfileIdx(userProfileEntity.getUserProfileIdx())
-                    .nickname(userProfileEntity.getNickName())
-                    .statusMsg(userProfileEntity.getStatusMsg())
-                    .imgUrl(userProfileEntity.getImgURL())
-                    .build();
-            GetMemberOfClubRes getMemberOfClubRes = GetMemberOfClubRes.builder()
-                    .memberStatusIdx(memberStatusEntity.getMemberStatusIdx())
-                    .userProfile(getMemberProfileRes)
-                    .build();
-            res.add(getMemberOfClubRes);
-        }
-        return res;
     }
 
     public GetClubDetailRes getClubDetail(Long clubIdx) throws BaseException {
