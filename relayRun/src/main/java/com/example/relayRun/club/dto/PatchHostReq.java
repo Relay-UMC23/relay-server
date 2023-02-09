@@ -6,11 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.Positive;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatchHostReq {
     @ApiModelProperty(value = "차기 방장 프로필 아이디")
+    @Positive
     private Long nextHostProfileIdx;
 }

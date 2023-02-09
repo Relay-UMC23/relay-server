@@ -40,7 +40,8 @@ public class ClubController {
     @GetMapping("/home/{userProfileIdx}")
     public BaseResponse<List<GetMemberOfClubRes>> getHome(
             Principal principal,
-            @ApiParam(value = "조회하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx) {
+            @ApiParam(value = "조회하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx
+    ) {
         try {
             Long clubIdx = clubService.getClubIdx(principal, userProfileIdx);
             List<GetMemberOfClubRes> getMemberOfClubResList = clubService.getMemberOfClub(clubIdx);
@@ -86,7 +87,8 @@ public class ClubController {
     public BaseResponse<String> makeClub(
             Principal principal,
             @ApiParam(value = "그룹 생성에 필요한 request body 정보") @Valid @RequestBody PostClubReq clubReq,
-            BindingResult bindingResult) {
+            BindingResult bindingResult
+    ) {
         try {
             if (bindingResult.hasErrors()) {
 //                ObjectError objectError = bindingResult.getAllErrors().stream().findFirst().get();
@@ -105,7 +107,8 @@ public class ClubController {
     @GetMapping("/{clubIdx}/members")
     public BaseResponse<List<GetMemberOfClubRes>> getMemberOfClub(
             @ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx,
-            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date) {
+            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date
+    ) {
         try {
             List<GetMemberOfClubRes> getMemberOfClubResList = clubService.getMemberOfClub(clubIdx);
             for(GetMemberOfClubRes getMemberOfClubRes : getMemberOfClubResList) {
@@ -125,7 +128,8 @@ public class ClubController {
     @GetMapping("/{clubIdx}")
     public BaseResponse<GetClubDetailRes> getClubDetail(
             @ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx,
-            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date) {
+            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date
+    ) {
         try {
             GetClubDetailRes getClubDetailRes = clubService.getClubDetail(clubIdx);
             getClubDetailRes.setGetMemberOfClubResList(getMemberOfClub(clubIdx, date).getResult());
@@ -188,8 +192,16 @@ public class ClubController {
     @ApiOperation(value="그룹 정보 변경 (방장만 가능)", notes="access 토큰, 그룹 식별자, 변경하고자 하는 그룹 정보 값 전체를 넘겨주세요")
     @ResponseBody
     @PatchMapping("/{clubIdx}")
-    public BaseResponse<String> patchClubInfo(Principal principal, @PathVariable("clubIdx") Long clubIdx, @RequestBody PatchClubInfoReq clubInfoReq){
+    public BaseResponse<String> patchClubInfo(
+            Principal principal,
+            @PathVariable("clubIdx") Long clubIdx,
+            @Valid @RequestBody PatchClubInfoReq clubInfoReq,
+            BindingResult bindingResult
+    ){
         try {
+            if (bindingResult.hasErrors()) {
+                throw new BaseException(BaseResponseStatus.VALIDATION_ERROR);
+            }
             clubService.updateClubInfo(principal, clubIdx, clubInfoReq);
             return new BaseResponse<>("그룹의 정보를 변경하였습니다.");
         } catch (BaseException e) {
@@ -200,7 +212,7 @@ public class ClubController {
     @ApiOperation(value="그룹 방장 위임", notes="path variable로 클럽 아이디를 전달하고 현재 프로필 아이디, 방장이 될 유저의 프로필 아이디를 body로 전달해주세요")
     @ResponseBody
     @PatchMapping("/{clubIdx}/host-change")
-    public BaseResponse<String> patchClubHost(Principal principal, @PathVariable("clubIdx") Long clubIdx, @RequestBody PatchHostReq hostReq) {
+    public BaseResponse<String> patchClubHost(Principal principal, @PathVariable("clubIdx") Long clubIdx, @Valid @RequestBody PatchHostReq hostReq) {
         try {
             clubService.updateClubHost(principal, clubIdx, hostReq);
             return new BaseResponse<>("방장을 위임 하였습니다.");
