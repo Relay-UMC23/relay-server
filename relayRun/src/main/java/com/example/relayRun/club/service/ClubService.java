@@ -29,24 +29,20 @@ public class ClubService {
     private final UserProfileRepository userProfileRepository;
     private final MemberStatusRepository memberStatusRepository;
     private final MemberStatusService memberStatusService;
-    private final RunningRecordService runningRecordService;
 
     public ClubService(ClubRepository clubRepository,
                        UserRepository userRepository,
                        UserProfileRepository userProfileRepository,
                        MemberStatusRepository memberStatusRepository,
-                       MemberStatusService memberStatusService,
-                       RunningRecordService runningRecordService) {
+                       MemberStatusService memberStatusService) {
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.memberStatusRepository = memberStatusRepository;
         this.memberStatusService = memberStatusService;
-        this.runningRecordService = runningRecordService;
     }
 
-    @Transactional
-    public List<GetMemberOfClubRes> getHome(Principal principal, Long userProfileIdx) throws BaseException {
+    public Long getClubIdx(Principal principal, Long userProfileIdx) throws BaseException {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
         if (optionalUserEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
@@ -68,18 +64,7 @@ public class ClubService {
             throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
         }
 
-        Long clubIdx = memberStatusEntity.get().getClubIdx().getClubIdx();
-        List<GetMemberOfClubRes> getMemberOfClubResList = getMemberOfClub(clubIdx);
-
-        for(GetMemberOfClubRes getMemberOfClubRes : getMemberOfClubResList) {
-            LocalDate date = LocalDate.now();
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//            LocalDateTime startDate = LocalDateTime.parse(date + " 00:00:00", formatter);
-//            LocalDateTime endDate = LocalDateTime.parse(date + " 23:59:59", formatter);
-            getMemberOfClubRes.setRunningRecord(runningRecordService.getRecordWithoutLocation(getMemberOfClubRes.getMemberStatusIdx(), date.atStartOfDay(), date.plusDays(1).atStartOfDay()));
-        }
-
-        return getMemberOfClubResList;
+        return memberStatusEntity.get().getClubIdx().getClubIdx();
     }
 
     public List<GetClubListRes> getClubs() throws BaseException {

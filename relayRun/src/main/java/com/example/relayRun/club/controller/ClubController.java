@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -41,7 +42,12 @@ public class ClubController {
             Principal principal,
             @ApiParam(value = "조회하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx) {
         try {
-            List<GetMemberOfClubRes> getMemberOfClubResList = clubService.getHome(principal, userProfileIdx);
+            Long clubIdx = clubService.getClubIdx(principal, userProfileIdx);
+            List<GetMemberOfClubRes> getMemberOfClubResList = clubService.getMemberOfClub(clubIdx);
+            for(GetMemberOfClubRes getMemberOfClubRes : getMemberOfClubResList) {
+                LocalDate date = LocalDate.now();
+                getMemberOfClubRes.setRunningRecord(runningRecordService.getRecordWithoutLocation(getMemberOfClubRes.getMemberStatusIdx(), date.atStartOfDay(), date.plusDays(1).atStartOfDay()));
+            }
             return new BaseResponse<>(getMemberOfClubResList);
         } catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
@@ -99,8 +105,7 @@ public class ClubController {
     @GetMapping("/{clubIdx}/members")
     public BaseResponse<List<GetMemberOfClubRes>> getMemberOfClub(
             @ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx,
-            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date
-    ) {
+            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date) {
         try {
             List<GetMemberOfClubRes> getMemberOfClubResList = clubService.getMemberOfClub(clubIdx);
             for(GetMemberOfClubRes getMemberOfClubRes : getMemberOfClubResList) {
