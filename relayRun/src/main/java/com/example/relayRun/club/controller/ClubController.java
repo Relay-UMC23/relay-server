@@ -16,6 +16,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -118,7 +119,9 @@ public class ClubController {
                 getMemberOfClubRes.setRunningRecord(runningRecordService.getRecordWithoutLocation(getMemberOfClubRes.getMemberStatusIdx(), startDate, endDate));
             }
             return new BaseResponse<>(getMemberOfClubResList);
-        } catch(BaseException e) {
+        } catch (DateTimeParseException e) {
+            return new BaseResponse<>(BaseResponseStatus.INVALID_DATE_FORMAT);
+        } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
@@ -134,6 +137,8 @@ public class ClubController {
             GetClubDetailRes getClubDetailRes = clubService.getClubDetail(clubIdx);
             getClubDetailRes.setGetMemberOfClubResList(getMemberOfClub(clubIdx, date).getResult());
             return new BaseResponse<>(getClubDetailRes);
+        } catch (DateTimeParseException e) {
+            return new BaseResponse<>(BaseResponseStatus.INVALID_DATE_FORMAT);
         } catch(BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
