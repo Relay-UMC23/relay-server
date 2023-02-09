@@ -39,7 +39,6 @@ public class PatchClubInfoReq {
     private GoalType goalType;
 
     @ApiModelProperty(example="목표 km")
-    @Positive
     private Float goal;
 
     @ApiModelProperty(value = "변경할 모집 상태")

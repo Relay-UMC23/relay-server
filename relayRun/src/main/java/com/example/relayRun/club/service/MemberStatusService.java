@@ -42,11 +42,22 @@ public class MemberStatusService {
     }
 
     @Transactional
-    public void createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
+    public void createMemberStatus(Principal principal, Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
+        Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+        if (optionalUserEntity.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        UserEntity userEntity = optionalUserEntity.get();
+
         Long userProfileIdx = memberStatus.getUserProfileIdx();
-        Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
-        if(userProfile.isEmpty()) {
+        Optional<UserProfileEntity> optionalUserProfileEntity = userProfileRepository.findByUserProfileIdxAndStatus(userProfileIdx, "active");
+        if (optionalUserProfileEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+        }
+        UserProfileEntity userProfileEntity = optionalUserProfileEntity.get();
+
+        if (!userProfileEntity.getUserIdx().equals(userEntity)) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_FIND_USER);
         }
 
         Optional<MemberStatusEntity> validationList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(userProfileIdx, "ACCEPTED", "active");
@@ -63,7 +74,7 @@ public class MemberStatusService {
         //member_status 등록
         MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
                 .clubIdx(club.get())
-                .userProfileIdx(userProfile.get())
+                .userProfileIdx(userProfileEntity)
                 .build();
 
         memberStatusRepository.save(memberStatusEntity);
@@ -121,11 +132,27 @@ public class MemberStatusService {
         }
     }
 
-    public List<GetTimeTableListRes> getUserTimeTable(Long userProfileIdx) throws BaseException {
+    public List<GetTimeTableListRes> getUserTimeTable(Principal principal, Long userProfileIdx) throws BaseException {
         try {
+            Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+            if (optionalUserEntity.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+            }
+            UserEntity userEntity = optionalUserEntity.get();
+
+            Optional<UserProfileEntity> optionalUserProfileEntity = userProfileRepository.findByUserProfileIdxAndStatus(userProfileIdx, "active");
+            if (optionalUserProfileEntity.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+            }
+            UserProfileEntity userProfileEntity = optionalUserProfileEntity.get();
+
+            if (!userProfileEntity.getUserIdx().equals(userEntity)) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_FIND_USER);
+            }
+
             Optional<MemberStatusEntity> memberStatusEntity = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(userProfileIdx, "ACCEPTED", "active");
             if(memberStatusEntity.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+                throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
             }
 
             Long memberStatusIdx = memberStatusEntity.get().getMemberStatusIdx();
@@ -165,11 +192,26 @@ public class MemberStatusService {
     }
 
     @Transactional
-    public void updateTimeTable(Long userProfileIdx, PostTimeTableReq postTimeTableReq) throws BaseException {
-        //memberStatusIdx 찾기
+    public void updateTimeTable(Principal principal, Long userProfileIdx, PostTimeTableReq postTimeTableReq) throws BaseException {
+        Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+        if (optionalUserEntity.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+        UserEntity userEntity = optionalUserEntity.get();
+
+        Optional<UserProfileEntity> optionalUserProfileEntity = userProfileRepository.findByUserProfileIdxAndStatus(userProfileIdx, "active");
+        if (optionalUserProfileEntity.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+        }
+        UserProfileEntity userProfileEntity = optionalUserProfileEntity.get();
+
+        if (!userProfileEntity.getUserIdx().equals(userEntity)) {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_FIND_USER);
+        }
+
         Optional<MemberStatusEntity> memberStatusEntity = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(userProfileIdx, "ACCEPTED", "active");
         if(memberStatusEntity.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
+            throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
         }
 
         //memberStatusIdx로 시간표 조회

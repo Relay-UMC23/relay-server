@@ -52,7 +52,6 @@ public class PostClubReq {
     private GoalType goalType;
 
     @ApiModelProperty(example="목표치 Float | 거리 단위 : km, 시간 단위 : 초")
-    @Positive
     private Float goal;
 
     @ApiModelProperty(required = true)

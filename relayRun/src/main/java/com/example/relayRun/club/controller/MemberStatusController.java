@@ -25,10 +25,11 @@ public class MemberStatusController {
         this.memberStatusService = memberStatusService;
     }
 
-    @ApiOperation(value = "그룹 신청", notes = "path variable로 신청하고자 하는 그룹의 clubIdx, body로는 신청자의 userProfileIdx와 신청자의 시간표 정보를 리스트 형식으로 보내면 그룹 신청과 시간표 등록이 완료됩니다.")
+    @ApiOperation(value = "그룹 신청", notes = "헤더로 토큰, path variable로 신청하고자 하는 그룹의 clubIdx, body로는 신청자의 userProfileIdx와 신청자의 시간표 정보를 리스트 형식으로 보내면 그룹 신청과 시간표 등록이 완료됩니다.")
     @ResponseBody
     @PostMapping("/{clubIdx}")
     public BaseResponse<String> createMemberStatus(
+            Principal principal,
             @ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx,
             @ApiParam(value = "신청자의 userProfileIdx과 시간표 정보") @Valid @RequestBody PostMemberStatusReq memberStatus,
             BindingResult bindingResult) {
@@ -36,7 +37,7 @@ public class MemberStatusController {
             if (bindingResult.hasErrors()) {
                 throw new BaseException(BaseResponseStatus.VALIDATION_ERROR);
             }
-            memberStatusService.createMemberStatus(clubIdx, memberStatus);
+            memberStatusService.createMemberStatus(principal, clubIdx, memberStatus);
             return new BaseResponse<>("그룹 신청 및 시간표 등록 완료");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
@@ -55,24 +56,26 @@ public class MemberStatusController {
         }
     }
 
-    @ApiOperation(value = "개인 시간표 조회", notes = "path variable로 조회하고자 하는 유저의 userProfileIdx를 보내면 해당 유저의 시간표를 리스트 형식으로 반환합니다.")
+    @ApiOperation(value = "개인 시간표 조회", notes = "헤더로 토큰, path variable로 조회하고자 하는 유저의 userProfileIdx를 보내면 해당 유저의 시간표를 리스트 형식으로 반환합니다.")
     @ResponseBody
     @GetMapping("/time-tables/{userProfileIdx}")
     public BaseResponse<List<GetTimeTableListRes>> getUserTimeTable(
+            Principal principal,
             @ApiParam(value = "조회하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx
 
     ) {
         try {
-            List<GetTimeTableListRes> timeTableList = memberStatusService.getUserTimeTable(userProfileIdx);
+            List<GetTimeTableListRes> timeTableList = memberStatusService.getUserTimeTable(principal, userProfileIdx);
             return new BaseResponse<>(timeTableList);
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
-    @ApiOperation(value = "시간표 수정", notes = "path variable로 수정하고자 하는 유저의 userProfileIdx, body로는 해당 유저의 시간표 정보를 리스트 형식으로 보내면 시간표 수정이 완료됩니다.")
+    @ApiOperation(value = "시간표 수정", notes = "헤더로 토큰, path variable로 수정하고자 하는 유저의 userProfileIdx, body로는 해당 유저의 시간표 정보를 리스트 형식으로 보내면 시간표 수정이 완료됩니다.")
     @ResponseBody
     @PostMapping("/time-tables/{userProfileIdx}")
     public BaseResponse<String> updateTimeTable(
+            Principal principal,
             @ApiParam(value = "수정하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx,
             @ApiParam(value = "유저의 시간표 정보(리스트 형식)") @Valid @RequestBody PostTimeTableReq postTimeTableReq,
             BindingResult bindingResult
@@ -81,7 +84,7 @@ public class MemberStatusController {
             if (bindingResult.hasErrors()) {
                 throw new BaseException(BaseResponseStatus.VALIDATION_ERROR);
             }
-            memberStatusService.updateTimeTable(userProfileIdx, postTimeTableReq);
+            memberStatusService.updateTimeTable(principal, userProfileIdx, postTimeTableReq);
             return new BaseResponse<>("시간표 수정 완료");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
@@ -94,7 +97,7 @@ public class MemberStatusController {
     public BaseResponse<String> leaveClub(
             Principal principal,
             @PathVariable Long clubIdx,
-            @RequestBody PatchDeleteMemberReq patchDeleteMemberReq) {
+            @Valid @RequestBody PatchDeleteMemberReq patchDeleteMemberReq) {
         try {
             Long userProfileIdx = patchDeleteMemberReq.getUserProfileIdx();
             memberStatusService.updateMemberStatus(principal, clubIdx, userProfileIdx);
@@ -110,7 +113,7 @@ public class MemberStatusController {
     public BaseResponse<String> deleteMember(
             Principal principal,
             @PathVariable Long clubIdx,
-            @RequestBody PatchDeleteMemberReq patchDeleteMemberReq) {
+            @Valid @RequestBody PatchDeleteMemberReq patchDeleteMemberReq) {
         try {
             String userProfileName = memberStatusService.deleteClubMember(principal, clubIdx, patchDeleteMemberReq);
             return new BaseResponse<>(userProfileName + "이(가) 강퇴되었습니다.");

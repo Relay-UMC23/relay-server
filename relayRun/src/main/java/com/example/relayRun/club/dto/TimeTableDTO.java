@@ -31,7 +31,6 @@ public class TimeTableDTO {
     private LocalTime end;
 
     @ApiModelProperty(example = "목표치 | Float | 거리 : km, 시간 : 초")
-    @Positive
     private Float goal;
 
     @ApiModelProperty(example = "목표 종류 | String | 목표 없음 : NOGOAL, 거리 : DISTANCE, 시간 : TIME")
