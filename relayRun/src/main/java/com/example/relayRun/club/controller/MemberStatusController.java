@@ -4,9 +4,11 @@ import com.example.relayRun.club.dto.*;
 import com.example.relayRun.club.service.MemberStatusService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
+import com.example.relayRun.util.BaseResponseStatus;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.security.Principal;
@@ -26,8 +28,14 @@ public class MemberStatusController {
     @ApiOperation(value = "그룹 신청", notes = "path variable로 신청하고자 하는 그룹의 clubIdx, body로는 신청자의 userProfileIdx와 신청자의 시간표 정보를 리스트 형식으로 보내면 그룹 신청과 시간표 등록이 완료됩니다.")
     @ResponseBody
     @PostMapping("/{clubIdx}")
-    public BaseResponse<String> createMemberStatus(@ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx, @ApiParam(value = "신청자의 userProfileIdx과 시간표 정보") @RequestBody PostMemberStatusReq memberStatus) {
+    public BaseResponse<String> createMemberStatus(
+            @ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx,
+            @ApiParam(value = "신청자의 userProfileIdx과 시간표 정보") @Valid @RequestBody PostMemberStatusReq memberStatus,
+            BindingResult bindingResult) {
         try {
+            if (bindingResult.hasErrors()) {
+                throw new BaseException(BaseResponseStatus.VALIDATION_ERROR);
+            }
             memberStatusService.createMemberStatus(clubIdx, memberStatus);
             return new BaseResponse<>("그룹 신청 및 시간표 등록 완료");
         } catch (BaseException e) {
@@ -66,15 +74,36 @@ public class MemberStatusController {
     @PostMapping("/time-tables/{userProfileIdx}")
     public BaseResponse<String> updateTimeTable(
             @ApiParam(value = "수정하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx,
-            @ApiParam(value = "유저의 시간표 정보(리스트 형식)") @Valid @RequestBody PostTimeTableReq postTimeTableReq
+            @ApiParam(value = "유저의 시간표 정보(리스트 형식)") @Valid @RequestBody PostTimeTableReq postTimeTableReq,
+            BindingResult bindingResult
     ) {
         try {
+            if (bindingResult.hasErrors()) {
+                throw new BaseException(BaseResponseStatus.VALIDATION_ERROR);
+            }
             memberStatusService.updateTimeTable(userProfileIdx, postTimeTableReq);
             return new BaseResponse<>("시간표 수정 완료");
         } catch (BaseException e) {
             return new BaseResponse<>(e.getStatus());
         }
     }
+
+    @ApiOperation(value="그룹 나가기", notes="헤더로 access 토큰, path variable로 clubIdx, body로 userProfileIdx를 보내면 그룹 나가기가 완료됩니다.")
+    @ResponseBody
+    @PatchMapping("/{clubIdx}")
+    public BaseResponse<String> leaveClub(
+            Principal principal,
+            @PathVariable Long clubIdx,
+            @RequestBody PatchDeleteMemberReq patchDeleteMemberReq) {
+        try {
+            Long userProfileIdx = patchDeleteMemberReq.getUserProfileIdx();
+            memberStatusService.updateMemberStatus(principal, clubIdx, userProfileIdx);
+            return new BaseResponse<>("그룹 나가기 완료");
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
     @ApiOperation(value="멤버 강퇴", notes="")
     @ResponseBody
     @PatchMapping("/{clubIdx}/members/deletion")

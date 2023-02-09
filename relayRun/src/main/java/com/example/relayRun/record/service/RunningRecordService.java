@@ -69,9 +69,10 @@ public class RunningRecordService {
      */
     public PostRunningInitRes startRunning(Principal principal, PostRunningInitReq runningInitReq) throws BaseException {
         try{
-            Optional<MemberStatusEntity> optionalMemberStatus = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndApplyStatusIs(
+            Optional<MemberStatusEntity> optionalMemberStatus = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(
                     runningInitReq.getProfileIdx(),
-                    "ACCEPTED"
+                    "ACCEPTED",
+                    "active"
             );
             if (optionalMemberStatus.isEmpty())
                 throw new BaseException(BaseResponseStatus.POST_RECORD_INVALID_CLUB_ACCESS);
