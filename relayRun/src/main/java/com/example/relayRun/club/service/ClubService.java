@@ -5,6 +5,7 @@ import com.example.relayRun.club.entity.ClubEntity;
 import com.example.relayRun.club.entity.MemberStatusEntity;
 import com.example.relayRun.club.repository.ClubRepository;
 import com.example.relayRun.club.repository.MemberStatusRepository;
+import com.example.relayRun.record.service.RunningRecordService;
 import com.example.relayRun.user.dto.GetMemberProfileRes;
 import com.example.relayRun.user.entity.UserEntity;
 import com.example.relayRun.user.entity.UserProfileEntity;
@@ -16,9 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,19 +29,24 @@ public class ClubService {
     private final UserProfileRepository userProfileRepository;
     private final MemberStatusRepository memberStatusRepository;
     private final MemberStatusService memberStatusService;
+    private final RunningRecordService runningRecordService;
 
-    public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository,
+    public ClubService(ClubRepository clubRepository,
+                       UserRepository userRepository,
+                       UserProfileRepository userProfileRepository,
                        MemberStatusRepository memberStatusRepository,
-                       MemberStatusService memberStatusService) {
-
+                       MemberStatusService memberStatusService,
+                       RunningRecordService runningRecordService) {
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.memberStatusRepository = memberStatusRepository;
         this.memberStatusService = memberStatusService;
+        this.runningRecordService = runningRecordService;
     }
 
-    public Long getClubIdx(Principal principal, Long userProfileIdx) throws BaseException {
+    @Transactional
+    public List<GetMemberOfClubRes> getHome(Principal principal, Long userProfileIdx) throws BaseException {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
         if (optionalUserEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
@@ -63,7 +68,18 @@ public class ClubService {
             throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
         }
 
-        return memberStatusEntity.get().getClubIdx().getClubIdx();
+        Long clubIdx = memberStatusEntity.get().getClubIdx().getClubIdx();
+        List<GetMemberOfClubRes> getMemberOfClubResList = getMemberOfClub(clubIdx);
+
+        for(GetMemberOfClubRes getMemberOfClubRes : getMemberOfClubResList) {
+            LocalDate date = LocalDate.now();
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//            LocalDateTime startDate = LocalDateTime.parse(date + " 00:00:00", formatter);
+//            LocalDateTime endDate = LocalDateTime.parse(date + " 23:59:59", formatter);
+            getMemberOfClubRes.setRunningRecord(runningRecordService.getRecordWithoutLocation(getMemberOfClubRes.getMemberStatusIdx(), date.atStartOfDay(), date.plusDays(1).atStartOfDay()));
+        }
+
+        return getMemberOfClubResList;
     }
 
     public List<GetClubListRes> getClubs() throws BaseException {
