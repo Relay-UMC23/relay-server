@@ -49,8 +49,7 @@ public class ClubController {
     @ResponseBody
     @GetMapping("")
     public BaseResponse<List<GetClubListRes>> getClubs(
-            @ApiParam(value = "그룹 검색어")@RequestParam(required = false) String search
-    ) {
+            @ApiParam(value = "그룹 검색어")@RequestParam(required = false) String search) {
         try {
             List<GetClubListRes> clubList;
             if(search == null) {
@@ -64,7 +63,6 @@ public class ClubController {
         }
     }
 
-    // 그룹 생성
     @ResponseBody
     @PostMapping("")
     @ApiResponses({

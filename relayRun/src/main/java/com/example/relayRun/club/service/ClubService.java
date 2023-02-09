@@ -84,7 +84,7 @@ public class ClubService {
 
     public List<GetClubListRes> getClubs() throws BaseException {
         try {
-            return clubRepository.findByOrderByRecruitStatusDesc();
+            return clubRepository.findByStatusOrderByCreatedAtDesc("active");
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
@@ -92,9 +92,8 @@ public class ClubService {
 
     public List<GetClubListRes> getClubsByName(String search) throws BaseException {
         try {
-            return clubRepository.findByNameContaining(search);
+            return clubRepository.findByNameContainingAndStatusOrderByCreatedAtDesc(search, "active");
         } catch (Exception e) {
-            e.printStackTrace();
             throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
