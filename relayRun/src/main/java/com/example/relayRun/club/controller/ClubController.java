@@ -6,9 +6,12 @@ import com.example.relayRun.club.service.MemberStatusService;
 import com.example.relayRun.record.service.RunningRecordService;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponse;
+import com.example.relayRun.util.BaseResponseStatus;
 import io.swagger.annotations.*;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +39,7 @@ public class ClubController {
     @GetMapping("/home/{userProfileIdx}")
     public BaseResponse<List<GetMemberOfClubRes>> getHome(
             Principal principal,
-            @ApiParam(value = "조회하고자 하는 유저의 userProfileIdx")@PathVariable Long userProfileIdx) {
+            @ApiParam(value = "조회하고자 하는 유저의 userProfileIdx") @PathVariable Long userProfileIdx) {
         try {
             List<GetMemberOfClubRes> getMemberOfClubResList = clubService.getHome(principal, userProfileIdx);
             return new BaseResponse<>(getMemberOfClubResList);
@@ -49,7 +52,7 @@ public class ClubController {
     @ResponseBody
     @GetMapping("")
     public BaseResponse<List<GetClubListRes>> getClubs(
-            @ApiParam(value = "그룹 검색어")@RequestParam(required = false) String search) {
+            @ApiParam(value = "그룹 검색어") @RequestParam(required = false) String search) {
         try {
             List<GetClubListRes> clubList;
             if(search == null) {
@@ -63,23 +66,27 @@ public class ClubController {
         }
     }
 
-    @ResponseBody
-    @PostMapping("")
+    @ApiOperation(value="그룹 생성(방장)", notes="token 필요 / body에는 이름, 방장 idx, 소개, 이미지, 최대인원, 레벨, 목표 분류(선택), 목표치 입력\n" +
+            "hostIdx에는 그룹을 생성하려는 유저의 프로필 식별자값 (int)를 넣어주시면 됩니다!!\n" +
+            "timetable 예시는 디스코드에 적어두었습니다!")
     @ApiResponses({
             @ApiResponse(code = 200, message = "그룹 생성 완료"),
             @ApiResponse(code = 401, message = "권한을 찾을 수 없습니다"),
             @ApiResponse(code = 404, message = "서버 문제 발생"),
             @ApiResponse(code = 500, message = "페이지를 찾을 수 없습니다")
     })
-    @ApiOperation(value="그룹 생성(방장)", notes="token 필요 / body에는 이름, 방장 idx, 소개, 이미지, 최대인원, 레벨, 목표 분류(선택), 목표치 입력\n" +
-
-            "hostIdx에는 그룹을 생성하려는 유저의 프로필 식별자값 (int)를 넣어주시면 됩니다!!\n" +
-            "timetable 예시는 디스코드에 적어두었습니다!")
+    @ResponseBody
+    @PostMapping("")
     public BaseResponse<String> makeClub(
             Principal principal,
-            @ApiParam(value = "그룹 생성에 필요한 request body 정보")@RequestBody PostClubReq clubReq
-    ) {
+            @ApiParam(value = "그룹 생성에 필요한 request body 정보") @Valid @RequestBody PostClubReq clubReq,
+            BindingResult bindingResult) {
         try {
+            if (bindingResult.hasErrors()) {
+//                ObjectError objectError = bindingResult.getAllErrors().stream().findFirst().get();
+//                String errMsg = objectError.getDefaultMessage();
+                throw new BaseException(BaseResponseStatus.VALIDATION_ERROR);
+            }
             clubService.makesClub(principal, clubReq);
             return new BaseResponse<>("그룹 생성을 성공하였습니다.");
         } catch (BaseException e) {

@@ -23,7 +23,6 @@ import java.util.Optional;
 
 @Service
 public class MemberStatusService {
-
     private final MemberStatusRepository memberStatusRepository;
     private final TimeTableRepository timeTableRepository;
     private final UserProfileRepository userProfileRepository;
@@ -44,63 +43,49 @@ public class MemberStatusService {
 
     @Transactional
     public void createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
-        try {
-            Long userProfileIdx = memberStatus.getUserProfileIdx();
-            Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
-            if(userProfile.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
-            }
-
-            List<MemberStatusEntity> validationList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(userProfileIdx, "active");
-            if(!validationList.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.DUPLICATE_MEMBER_STATUS);
-            }
-
-            //신청 대상 그룹 정보
-            Optional<ClubEntity> club = clubRepository.findById(clubIdx);
-            if(club.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
-            }
-
-            //member_status 등록
-            MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
-                    .clubIdx(club.get())
-                    .userProfileIdx(userProfile.get())
-                    .build();
-
-            memberStatusRepository.save(memberStatusEntity);
-
-            Long memberStatusIdx = memberStatusEntity.getMemberStatusIdx();
-            List<TimeTableDTO> timeTables = memberStatus.getTimeTables();
-
-            this.createTimeTable(memberStatusIdx, timeTables);
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.POST_MEMBER_STATUS_FAIL);
+        Long userProfileIdx = memberStatus.getUserProfileIdx();
+        Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
+        if(userProfile.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
         }
+
+        Optional<MemberStatusEntity> validationList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(userProfileIdx, "ACCEPTED", "active");
+        if(!validationList.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.DUPLICATE_MEMBER_STATUS);
+        }
+
+        //신청 대상 그룹 정보
+        Optional<ClubEntity> club = clubRepository.findByClubIdxAndRecruitStatusAndStatus(clubIdx, "recruiting", "active");
+        if(club.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.CLUB_EMPTY);
+        }
+
+        //member_status 등록
+        MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
+                .clubIdx(club.get())
+                .userProfileIdx(userProfile.get())
+                .build();
+
+        memberStatusRepository.save(memberStatusEntity);
+
+        List<TimeTableDTO> timeTables = memberStatus.getTimeTables();
+
+        this.createTimeTable(memberStatusEntity, timeTables);
     }
 
     @Transactional
-    public void createTimeTable(Long memberStatusIdx, List<TimeTableDTO> timeTables) throws BaseException {
-        try {
-            Optional<MemberStatusEntity> memberStatusEntity = memberStatusRepository.findById(memberStatusIdx);
-            if(memberStatusEntity.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.INVALID_MEMBER_STATUS);
-            }
+    public void createTimeTable(MemberStatusEntity memberStatusEntity, List<TimeTableDTO> timeTables) {
+        for (TimeTableDTO timeTable : timeTables) {
+            TimeTableEntity timeTableEntity = TimeTableEntity.builder()
+                    .memberStatusIdx(memberStatusEntity)
+                    .day(timeTable.getDay())
+                    .start(timeTable.getStart())
+                    .end(timeTable.getEnd())
+                    .goal(timeTable.getGoal())
+                    .goalType(timeTable.getGoalType())
+                    .build();
 
-            for (TimeTableDTO timeTable : timeTables) {
-                TimeTableEntity timeTableEntity = TimeTableEntity.builder()
-                        .memberStatusIdx(memberStatusEntity.get())
-                        .day(timeTable.getDay())
-                        .start(timeTable.getStart())
-                        .end(timeTable.getEnd())
-                        .goal(timeTable.getGoal())
-                        .goalType(timeTable.getGoalType())
-                        .build();
-
-                timeTableRepository.save(timeTableEntity);
-            }
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.POST_TIME_TABLE_FAIL);
+            timeTableRepository.save(timeTableEntity);
         }
     }
 

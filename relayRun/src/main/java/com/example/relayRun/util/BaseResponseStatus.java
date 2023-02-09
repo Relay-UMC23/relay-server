@@ -62,6 +62,8 @@ public enum BaseResponseStatus {
 
     SOCIAL(false, 5001, "소셜로 로그인을 진행한 이메일 입니다."),
     NOT_SOCIAL(false, 2001, "소셜이 로그인으로 진행한 이메일입니다."),
+
+    VALIDATION_ERROR(false, 4000, "유효하지 않은 입력 값입니다."),
     /*
      * 5000: database error
      * */

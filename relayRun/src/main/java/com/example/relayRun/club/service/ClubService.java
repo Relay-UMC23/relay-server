@@ -139,7 +139,6 @@ public class ClubService {
                 .build();
     }
 
-    // 그룹 생성
     @Transactional
     public void makesClub(Principal principal, PostClubReq clubReq) throws BaseException {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
@@ -158,12 +157,13 @@ public class ClubService {
             throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
         }
 
-        if (clubReq.getName().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
-        }
-        if (clubReq.getContent().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
-        }
+//        if (clubReq.getName().isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
+//        }
+//        if (clubReq.getContent().isEmpty()) {
+//            throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
+//        }
+
         ClubEntity clubEntity = ClubEntity.builder()
                 .name(clubReq.getName())
                 .content(clubReq.getContent())
@@ -184,7 +184,7 @@ public class ClubService {
 
         memberStatusRepository.save(memberStatusEntity);
 
-        memberStatusService.createTimeTable(memberStatusEntity.getMemberStatusIdx(), clubReq.getTimeTable());
+        memberStatusService.createTimeTable(memberStatusEntity, clubReq.getTimeTable());
     }
 
     @Transactional
