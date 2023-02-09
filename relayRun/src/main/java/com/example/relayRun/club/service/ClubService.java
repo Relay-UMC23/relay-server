@@ -112,21 +112,26 @@ public class ClubService {
     }
 
     public GetClubDetailRes getClubDetail(Long clubIdx) throws BaseException {
-        Optional<ClubEntity> optional = clubRepository.findByClubIdxAndStatus(clubIdx, "active");
-        if (optional.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.CLUB_UNAVAILABLE);
+        try {
+            Optional<ClubEntity> optional = clubRepository.findByClubIdxAndStatus(clubIdx, "active");
+            if (optional.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.CLUB_UNAVAILABLE);
+            }
+
+            ClubEntity clubEntity = optional.get();
+            return GetClubDetailRes.builder()
+                    .clubIdx(clubEntity.getClubIdx())
+                    .imgURL(clubEntity.getImgURL())
+                    .name(clubEntity.getName())
+                    .content(clubEntity.getContent())
+                    .hostIdx(clubEntity.getHostIdx().getUserProfileIdx())
+                    .level(clubEntity.getLevel())
+                    .goalType(clubEntity.getGoalType())
+                    .goal(clubEntity.getGoal())
+                    .build();
+        } catch(Exception e) {
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
-        ClubEntity clubEntity = optional.get();
-        return GetClubDetailRes.builder()
-                .clubIdx(clubEntity.getClubIdx())
-                .imgURL(clubEntity.getImgURL())
-                .name(clubEntity.getName())
-                .content(clubEntity.getContent())
-                .hostIdx(clubEntity.getHostIdx().getUserProfileIdx())
-                .level(clubEntity.getLevel())
-                .goalType(clubEntity.getGoalType())
-                .goal(clubEntity.getGoal())
-                .build();
     }
 
     @Transactional

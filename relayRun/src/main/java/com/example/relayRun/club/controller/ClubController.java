@@ -125,8 +125,7 @@ public class ClubController {
     @GetMapping("/{clubIdx}")
     public BaseResponse<GetClubDetailRes> getClubDetail(
             @ApiParam(value = "조회하고자 하는 그룹의 clubIdx")@PathVariable Long clubIdx,
-            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date
-    ) {
+            @ApiParam(value = "조회하고자 하는 날짜")@RequestParam("date") String date) {
         try {
             GetClubDetailRes getClubDetailRes = clubService.getClubDetail(clubIdx);
             getClubDetailRes.setGetMemberOfClubResList(getMemberOfClub(clubIdx, date).getResult());
