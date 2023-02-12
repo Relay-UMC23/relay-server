@@ -23,17 +23,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.html.Option;
-import java.security.Principal;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -248,14 +243,15 @@ public class RunningRecordService {
     public GetDailyRes getDailyRecord(Principal principal, LocalDate date) throws BaseException {
         try {
             Optional<UserEntity> user = userRepository.findByEmail(principal.getName());
-            if (user.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
-            }
 
             List<RunningRecordEntity> records = new ArrayList<>();
+
             List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdx(user.get()).get();
+
+            List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdxAndStatus(user.get(), "active");
+
             for (UserProfileEntity profile : profileList) {
-                List<MemberStatusEntity> statusList = memberStatusRepository.findByUserProfileIdx_UserProfileIdx(profile.getUserProfileIdx());
+                List<MemberStatusEntity> statusList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(profile.getUserProfileIdx(), "active");
                 for (MemberStatusEntity status : statusList) {
                     records.addAll(runningRecordRepository
                             .findByMemberStatusIdxAndCreatedAtBetweenAndRunningStatus(status, date.atStartOfDay(), date.plusDays(1).atStartOfDay(), "finish"));
@@ -299,6 +295,64 @@ public class RunningRecordService {
                 System.out.println("e = " + e);
                 throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
             }
+        }
+    }
+
+    public List<MemberStatusEntity> getApplyList(UserEntity user) {
+        List<MemberStatusEntity> applyList = new ArrayList<>();
+
+        List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdxAndStatus(user, "active"); // 프로필 여러개
+        for (UserProfileEntity profile : profileList) {
+            List<MemberStatusEntity> statusList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(profile.getUserProfileIdx(), "active");
+            applyList.addAll(statusList);
+        }
+        return applyList;
+}
+
+    /**
+     * 개인 기록 캘린더
+     * @param principal
+     * @param year
+     * @param month
+     * @return
+     * @throws BaseException
+     */
+    public List<GetDailyRes> getCalender(Principal principal, Integer year, Integer month) throws BaseException {
+        try {
+            // principal에서 user 가져오기
+            Optional<UserEntity> user = userRepository.findByEmail(principal.getName());
+
+            if (user.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+            }
+
+            // user의 모든 memberStatus 가져오기
+            List<MemberStatusEntity> applyList = getApplyList(user.get());
+
+            // memberStatus에 해당하는 기록 중 해당 월만 갖고오기
+            List<RunningRecordEntity> recordList = runningRecordRepository.selectByMemberStatusAndYearAndMonthAndStatus(applyList, year, month, "active");
+
+            // GetDailyRes로 변환
+            List<GetDailyRes> calender = new ArrayList<>();
+            for (RunningRecordEntity record : recordList) {
+                calender.add(
+                        GetDailyRes.builder()
+                                .date(record.getCreatedAt().toLocalDate())
+                                .totalTime(record.getTime())
+                                .totalDist(record.getDistance())
+                                .avgPace(record.getPace())
+                                .build()
+                );
+            }
+
+            return calender;
+
+        } catch (NullPointerException e) { // principal이 없거나 맞지 않을 때
+            throw new BaseException(BaseResponseStatus.EMPTY_TOKEN);
+
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
         }
     }
 }
