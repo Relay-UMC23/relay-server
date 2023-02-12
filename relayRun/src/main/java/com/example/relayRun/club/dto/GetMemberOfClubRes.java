@@ -20,6 +20,9 @@ public class GetMemberOfClubRes {
     @ApiModelProperty(example = "프로필 정보")
     private GetMemberProfileRes userProfile;
 
+    @ApiModelProperty(example = "해당 프로필 시간표")
+    private GetTimeTableRes timeTableRes;
+
     @ApiModelProperty(example = "당일 달리기 기록")
     private List<GetRecordWithoutLocationRes> runningRecord;
 }

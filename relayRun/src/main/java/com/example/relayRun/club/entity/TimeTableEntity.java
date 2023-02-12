@@ -1,16 +1,13 @@
 package com.example.relayRun.club.entity;
 
-import com.example.relayRun.club.entity.MemberStatusEntity;
 import com.example.relayRun.util.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
-
 import javax.persistence.*;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity

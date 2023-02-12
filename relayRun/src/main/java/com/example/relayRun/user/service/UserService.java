@@ -24,6 +24,7 @@ import com.example.relayRun.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -76,8 +77,15 @@ public class UserService {
 
     private RedisUtil redisUtil;
 
-    private final String ePw = createKey();
-    private String id = "codusl100@naver.com";
+    private String bucketURL = "https://runningmen-bucket.s3.ap-northeast-2.amazonaws.com";
+
+    private HashMap<Integer, String> avatar = new HashMap<>() {{
+        put(1, bucketURL + "/1.png");
+        put(2, bucketURL + "/2.png");
+        put(3, bucketURL + "/3.png");
+        put(4, bucketURL + "/4.png");
+        put(5, bucketURL + "/5.png");
+    }};
 
 
 //    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
@@ -128,16 +136,20 @@ public class UserService {
                 .loginType(LoginType.BASIC)
                 .role(Role.ROLE_USER)
                 .build();
-        user.setPwd(password);
 
-        userEntity = userRepository.save(userEntity);
-        UserProfileEntity userProfileEntity = UserProfileEntity.builder()
-                .nickName("기본 닉네임")
-                .imgURL("기본 이미지")
-                .statusMsg("안녕하세요")
-                .userIdx(userEntity)
-                .build();
+        userRepository.save(userEntity);
+
+        Random random = new Random();
+        // 프로필 자동 생성
+        UserProfileEntity userProfileEntity = buildProfile(
+                userEntity,
+                userEntity.getName(),
+                avatar.get(random.nextInt(5) + 1),
+                "y",
+                "안녕하세요");
+
         userProfileRepository.save(userProfileEntity);
+
         return token(user);
 
     }
@@ -350,15 +362,35 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
         UserEntity userEntity = optionalUserEntity.get();
+
+        UserProfileEntity userProfileEntity = buildProfile(userEntity,
+                                        profileReq.getNickname(),
+                                        profileReq.getImgUrl(),
+                                        profileReq.getIsAlarmOn(),
+                                        profileReq.getStatusMsg());
+
+        return userProfileEntity.getUserProfileIdx();
+    }
+
+    /**
+     *
+     * @param userEntity
+     * @param nickname
+     * @param imgURL
+     * @param isAlarmOn
+     * @param statusMsg
+     * @return UserProfileEntity
+     */
+    public UserProfileEntity buildProfile(UserEntity userEntity, String nickname, String imgURL, String isAlarmOn, String statusMsg) {
         UserProfileEntity userProfileEntity = UserProfileEntity.builder()
                 .userIdx(userEntity)
-                .nickName(profileReq.getNickname())
-                .imgURL(profileReq.getImgUrl())
-                .isAlarmOn(profileReq.getIsAlarmOn())
-                .statusMsg(profileReq.getStatusMsg())
+                .nickName(nickname)
+                .imgURL(imgURL)
+                .isAlarmOn(isAlarmOn)
+                .statusMsg(statusMsg)
                 .build();
         userProfileEntity = userProfileRepository.save(userProfileEntity);
-        return userProfileEntity.getUserProfileIdx();
+        return userProfileEntity;
     }
 
     public void changeAlarm(Principal principal, Long profileIdx) throws BaseException {
@@ -383,7 +415,7 @@ public class UserService {
             userProfileRepository.save(UserProfile);
         }
     }
-    public MimeMessage createMessage(String to)throws MessagingException, UnsupportedEncodingException {
+    public MimeMessage createMessage(String from, String to, String ePw) throws MessagingException, UnsupportedEncodingException {
         log.info("보내는 대상 : "+ to);
         log.info("인증 번호 : " + ePw);
         MimeMessage  message = javaMailSender.createMimeMessage();
@@ -399,7 +431,7 @@ public class UserService {
         msg += "</td></tr></tbody></table></div>";
 
         message.setText(msg, "utf-8", "html"); //내용, charset타입, subtype
-        message.setFrom(new InternetAddress(id,"이어달리기 팀")); //보내는 사람의 메일 주소, 보내는 사람 이름
+        message.setFrom(new InternetAddress(from,"이어달리기 팀")); //보내는 사람의 메일 주소, 보내는 사람 이름
 
         return message;
     }
@@ -416,12 +448,12 @@ public class UserService {
     }
 
     // 메일 발송
-    public String sendSimpleMessage(Principal principal, String to)throws Exception {
+    public String sendSimpleMessage(Principal principal, String from)throws Exception {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
         if(optionalUserEntity.isEmpty()) {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
-        UserProfileEntity UserProfile = userProfileRepository.findByUserProfileIdx(optionalUserEntity.get().getUserIdx()).get();
+        UserProfileEntity UserProfile = userProfileRepository.findByUserIdx(optionalUserEntity.get()).get();
         if (UserProfile.getIsAlarmOn().equals("y")) {
             UserProfile.setIsAlarmOn("n");
             userProfileRepository.save(UserProfile);
@@ -430,13 +462,14 @@ public class UserService {
             UserProfile.setIsAlarmOn("y");
             userProfileRepository.save(UserProfile);
         }
-        MimeMessage message = createMessage(to);
-        String email = optionalUserEntity.get().getEmail();
+        String ePw = createKey(); // 새로운 코드 발급
+        String to = optionalUserEntity.get().getEmail();
+        MimeMessage message = createMessage(from, to, ePw);
         try{
             javaMailSender.send(message); // 메일 발송
             //    Redis로 유효기간 설정하기
             // 유효 시간(5분)동안 {email, authKey} 저장
-            redisUtil.setDataExpire(ePw, email, 60 * 5L);
+            redisUtil.setDataExpire(ePw, to, 60 * 5L);
         }catch(MailException es){
             es.printStackTrace();
             throw new IllegalArgumentException();
@@ -452,7 +485,7 @@ public class UserService {
         }
         String user = redisUtil.getData(code.getCode());
         log.info("유저 정보 : " + user);
-        if (user == null || user.length() == 0) {
+        if (user == null || user.length() == 0 || !user.equals(optionalUserEntity.get().getEmail())) {
             return false;
         }
         return true;

@@ -2,10 +2,7 @@ package com.example.relayRun.club.entity;
 
 import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.util.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
@@ -14,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @DynamicInsert
 @Table(name = "club")
@@ -52,10 +50,10 @@ public class ClubEntity extends BaseTimeEntity {
     @Column()
     private Float goal;
 
-    @Column(columnDefinition = "varchar(10) default 'recruiting'")
+    @Column(columnDefinition = "varchar(10) default 'RECRUITING'")
     private String recruitStatus;
 
-    @Column(columnDefinition = "varchar(10) default 'active'")
+    @Column(columnDefinition = "varchar(10) default 'ACTIVE'")
     private String status;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "clubIdx", orphanRemoval = true)

@@ -23,7 +23,7 @@ public class OAuth2Attribute {
     private String pwd;
     private String imgURL;
     private LoginType loginType;
-    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
     public static OAuth2Attribute of(String provider, String attributeKey,
                                      Map<String, Object> attributes) {
         switch (provider) {

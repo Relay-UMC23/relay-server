@@ -19,20 +19,18 @@ public class RecordDataHandler {
         float totalTime = 0;
         float totalDist = 0;
         float totalPace = 0;
-        Long count = 0L;
 
         for (RunningRecordEntity rec : list) {
             totalTime += rec.getTime();
             totalDist += rec.getDistance();
             totalPace += rec.getPace();
-            count++;
         }
 
         return GetDailyRes.builder()
                 .date(date)
                 .totalTime(totalTime)
                 .totalDist(totalDist)
-                .avgPace(totalPace/count)
+                .avgPace(list.isEmpty()? totalPace: totalPace/list.size())
                 .build();
     }
     public static Float toSecond(LocalTime time) {

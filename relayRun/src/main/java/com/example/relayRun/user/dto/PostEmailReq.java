@@ -8,6 +8,6 @@ import javax.validation.constraints.Email;
 @Data
 public class PostEmailReq {
     @Email
-    @ApiModelProperty(example = "인증 번호 보낼 이메일")
+    @ApiModelProperty(example = "이메일 발신자, 서버에게 문의해주세요")
     private String email;
 }

@@ -30,19 +30,19 @@ public class PostClubReq {
     @ApiModelProperty(example="그룹 대표 이미지", required = true)
     private String imgURL;
 
-    @ApiModelProperty(example="방장 식별자", hidden = true)
-    private UserProfileEntity hostIdx;
+    @ApiModelProperty(example="방장 식별자 (현재 유저의 프로필 식별자)", required = true)
+    private Long hostIdx;
 
-    @ApiModelProperty(example="최대 인원 수", required = true)
+    @ApiModelProperty(example="최대 인원 수 | Integer", required = true)
     private Integer maxNum;
 
-    @ApiModelProperty(example="난이도", required = true)
+    @ApiModelProperty(example="난이도 | Integer | 전체 : 0, 초급 : 1, 중급 : 2, 상급 : 3", required = true)
     private Integer level;
 
-    @ApiModelProperty(example="목표 종류")
+    @ApiModelProperty(example="그룹 목표 종류 | String | 목표 없음 : NOGOAL, 거리 : DISTANCE, 시간 : TIME")
     private GoalType goalType;
 
-    @ApiModelProperty(example="목표 km")
+    @ApiModelProperty(example="목표치 Float | 거리 단위 : km, 시간 단위 : 초")
     private Float goal;
 
     @ApiModelProperty(required = true)
