@@ -65,7 +65,7 @@ public class UserController {
 
     @ResponseBody
     @ApiOperation(value = "회원 탈퇴", notes = "헤더에 access Token 담아주세요!")
-    @DeleteMapping("/withdrawal")
+    @PatchMapping("/withdrawal")
     public BaseResponse<String> deleteUser(Principal principal) throws BaseException {
         this.userService.deleteUser(principal);
         return new BaseResponse<>("회원 탈퇴를 완료했습니다.");

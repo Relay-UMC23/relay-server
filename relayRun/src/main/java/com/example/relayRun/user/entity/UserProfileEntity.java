@@ -55,5 +55,6 @@ public class UserProfileEntity extends BaseTimeEntity {
     public void setIsAlarmOn (String isAlarmOn){
         this.isAlarmOn = isAlarmOn;
     }
+    public void changeStatus(String status){ this.status = status; }
 }
 

@@ -244,20 +244,37 @@ public class UserService {
             String email = user.getEmail();
             Long userIdx = user.getUserIdx();
 
+            // User Profile 조회 (List)
+            Optional<List<UserProfileEntity>> optionalProfileList = userProfileRepository.findAllByUserIdx(user);
+            if (optionalProfileList.isPresent()) {
+                List<UserProfileEntity> ProfileList = optionalProfileList.get();
+                // User Profile status 변경
+                for(UserProfileEntity i : ProfileList) {
+                    try {
+                        i.changeStatus("inactive");
+                        userProfileRepository.save(i);
+                    } catch (Exception e) {
+                        throw new BaseException(BaseResponseStatus.DELETE_USERPROFILE_ERROR);
+                    }
+                }
+            }
+
             // Refresh Token 삭제
             Optional<RefreshTokenEntity> optionalRT = refreshTokenRepository.findByKeyId(email);
             if(optionalRT.isPresent()) {
                 refreshTokenRepository.delete(optionalRT.get());
             }
-            // User 삭제
+
+            // User status inactive로 변경
             try {
-                userRepository.deleteById(userIdx);
+                user.changeStatus("inactive");
+                userRepository.save(user);
             } catch (Exception e) {
                 throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
                 }
             }
         else {
-            throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
     }
 
