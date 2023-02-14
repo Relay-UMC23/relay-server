@@ -1,0 +1,115 @@
+# workflow의 이름
+name: CI & CD
+
+# 해당 workflow가 언제 실행될 것인지에 대한 트리거를 지정
+on:
+  push:
+    branches: [ main ] # main branch로 push 될 때 실행됩니다.
+# -- PR 전부가 아닌 리뷰 완료 후 main에 머지된거만 작동하도록 변경하겠습니다 --
+#  pull_request:
+#    branches: [ main ]  # main branch로 pull request될 때 실행됩니다.
+
+# 해당 yml 내에서 사용할 key - value
+env:
+  S3_BUCKET_NAME: team23-bucket
+  PROJECT_NAME: cicdtest
+
+# workflow는 한개 이상의 job을 가지며, 각 job은 여러 step에 따라 단계를 나눌 수 있습니다.
+jobs:
+  build:
+    name: CI
+    # 해당 jobs에서 아래의 steps들이 어떠한 환경에서 실행될 것인지를 지정합니다.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./relayRun"
+    steps:
+     # 작업에서 액세스할 수 있도록 $GITHUB_WORKSPACE에서 저장소를 체크아웃합니다.
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'zulu'
+
+      - name: Setup MySQL
+        uses: samin/mysql-action@v1
+        with:
+          character set server: 'utf8'
+          mysql database: 'RUNNINGMEN'
+          mysql user: 'runningmen'
+          mysql password: ${{ secrets.MYSQL_PASSWORD }} # github Secret 탭에서 설정하세요!
+
+  deploy:
+    name: CD
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./relayRun"
+    
+    steps:
+      # 작업에서 액세스할 수 있도록 $GITHUB_WORKSPACE에서 저장소를 체크아웃합니다.
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'zulu'
+
+      - name: Copy Secret
+        env:
+          OCCUPY_SECRET: ${{ secrets.OCCUPY_SECRET }}
+          OCCUPY_SECRET_DIR: src/main/resources
+          OCCUPY_SECRET_DIR_FILE_NAME: application-secret.yml
+        run: echo $OCCUPY_SECRET | base64 --decode > $OCCUPY_SECRET_DIR/$OCCUPY_SECRET_DIR_FILE_NAME
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+      
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+        shell: bash
+
+      # 전송할 파일을 담을 디렉토리 생성
+      - name: Make Directory for deliver
+        run: mkdir deploy
+
+      # Jar 파일 Copy
+      - name: Copy Jar
+        run: cp ./build/libs/*.jar ./deploy/
+
+      # appspec.yml Copy
+      - name: Copy appspec
+        run: cp ./appspec.yml ./deploy/
+
+      # script files Copy
+      - name: Copy script
+        run: cp ./scripts/*.sh ./deploy
+
+      # jar, appspec, script 압축
+      - name: Make zip file
+        run: zip -r ./$GITHUB_SHA.zip ./deploy
+        shell: bash
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # S3에 업로드
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+      
+      # Deploy
+      - name: Deploy
+        run: |
+          aws deploy create-deployment \
+          --application-name relayRun \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --deployment-group-name relayRun-prod \
+          --file-exists-behavior OVERWRITE \
+          --s3-location bucket=team23-bucket,bundleType=zip,key=cicdtest/$GITHUB_SHA.zip \
+          --region ap-northeast-2 \
