@@ -1,9 +1,19 @@
 package com.example.relayRun.user.service;
 
+import com.example.relayRun.club.entity.ClubEntity;
+import com.example.relayRun.club.entity.MemberStatusEntity;
+import com.example.relayRun.club.entity.TimeTableEntity;
+import com.example.relayRun.club.repository.ClubRepository;
+import com.example.relayRun.club.repository.MemberStatusRepository;
+import com.example.relayRun.club.repository.TimeTableRepository;
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.dto.TokenDto;
 import com.example.relayRun.jwt.entity.RefreshTokenEntity;
 import com.example.relayRun.jwt.repository.RefreshTokenRepository;
+import com.example.relayRun.record.entity.LocationEntity;
+import com.example.relayRun.record.entity.RunningRecordEntity;
+import com.example.relayRun.record.repository.RecordRepository;
+import com.example.relayRun.record.repository.RunningRecordRepository;
 import com.example.relayRun.user.dto.*;
 import com.example.relayRun.user.entity.LoginType;
 import com.example.relayRun.user.entity.UserEntity;
@@ -11,7 +21,9 @@ import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,20 +46,32 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.sql.Time;
 import java.util.*;
 
 import static com.example.relayRun.util.ValidationRegex.isRegexEmail;
 import static com.example.relayRun.util.ValidationRegex.isRegexPwd;
+import static java.util.Optional.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private UserRepository userRepository;
-    private UserProfileRepository userProfileRepository;
-    private PasswordEncoder passwordEncoder;
-    private TokenProvider tokenProvider;
-    private RefreshTokenRepository refreshTokenRepository;
-    private AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final ClubRepository clubRepository;
+    @Autowired
+    private final RecordRepository recordRepository;
+    @Autowired
+    private final RunningRecordRepository runningRecordRepository;
+    @Autowired
+    private final MemberStatusRepository memberStatusRepository;
+    @Autowired
+    private final TimeTableRepository timeTableRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private JavaMailSender javaMailSender;
 
@@ -64,18 +88,25 @@ public class UserService {
     }};
 
 
-    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
-                       PasswordEncoder passwordEncoder, TokenProvider tokenProvider, RefreshTokenRepository refreshTokenRepository,
-                       AuthenticationManagerBuilder authenticationManagerBuilder, JavaMailSender javaMailSender, RedisUtil redisUtil){
-        this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenProvider = tokenProvider;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
-        this.javaMailSender = javaMailSender;
-        this.redisUtil = redisUtil;
-    }
+//    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
+//                       PasswordEncoder passwordEncoder, TokenProvider tokenProvider, RefreshTokenRepository refreshTokenRepository,
+//                       ClubRepository clubRepository, RecordRepository recordRepository, RunningRecordRepository runningRecordRepository,
+//                       MemberStatusRepository memberStatusRepository, TimeTableRepository timeTableRepository,
+//                       AuthenticationManagerBuilder authenticationManagerBuilder, JavaMailSender javaMailSender, RedisUtil redisUtil){
+//        this.userRepository = userRepository;
+//        this.userProfileRepository = userProfileRepository;
+//        this.clubRepository = clubRepository;
+//        this.recordRepository = recordRepository;
+//        this.runningRecordRepository = runningRecordRepository;
+//        this.memberStatusRepository = memberStatusRepository;
+//        this.timeTableRepository = timeTableRepository;
+//        this.passwordEncoder = passwordEncoder;
+//        this.tokenProvider = tokenProvider;
+//        this.refreshTokenRepository = refreshTokenRepository;
+//        this.authenticationManagerBuilder = authenticationManagerBuilder;
+//        this.javaMailSender = javaMailSender;
+//        this.redisUtil = redisUtil;
+//    }
 
     // 회원가입
     public TokenDto signIn(PostUserReq user) throws BaseException {
@@ -125,6 +156,13 @@ public class UserService {
 
     // 로그인
     public TokenDto logIn(PostLoginReq user) throws BaseException {
+        // user status 확인
+        Optional<UserEntity> userOptional = userRepository.findByEmail(user.getEmail());
+        if(userOptional.isPresent()){
+            if(userOptional.get().getStatus().equals("inactive")) {
+                throw new BaseException(BaseResponseStatus.POST_INVALID_USERS);
+            }
+        }
         if(!isRegexEmail(user.getEmail())){
             throw new BaseException(BaseResponseStatus.POST_USERS_INVALID_EMAIL);
         }
@@ -149,7 +187,7 @@ public class UserService {
         }
     }
 
-    public boolean isHaveEmail(String email) { return this.userRepository.existsByEmail(email); }
+    public boolean isHaveEmail(String email) { return userRepository.existsByEmail(email); }
 
 
     public TokenDto token(PostUserReq user){
@@ -216,6 +254,50 @@ public class UserService {
         return tokenDto;
     }
 
+    public void deleteUser(Principal principal) throws BaseException {
+        // User 조회
+        Optional<UserEntity> optionalUser = userRepository.findByEmail(principal.getName());
+        if (optionalUser.isPresent()) {
+            // UserEntity
+            UserEntity user = optionalUser.get();
+            String email = user.getEmail();
+            Long userIdx = user.getUserIdx();
+
+            // User Profile 조회 (List)
+            Optional<List<UserProfileEntity>> optionalProfileList = userProfileRepository.findAllByUserIdx(user);
+            if (optionalProfileList.isPresent()) {
+                List<UserProfileEntity> ProfileList = optionalProfileList.get();
+                // User Profile status 변경
+                for(UserProfileEntity i : ProfileList) {
+                    try {
+                        i.changeStatus("inactive");
+                        userProfileRepository.save(i);
+                    } catch (Exception e) {
+                        throw new BaseException(BaseResponseStatus.DELETE_USERPROFILE_ERROR);
+                    }
+                }
+            }
+
+            // Refresh Token 삭제
+            Optional<RefreshTokenEntity> optionalRT = refreshTokenRepository.findByKeyId(email);
+            if(optionalRT.isPresent()) {
+                refreshTokenRepository.delete(optionalRT.get());
+            }
+
+            // User status inactive로 변경
+            try {
+                user.changeStatus("inactive");
+                userRepository.save(user);
+            } catch (Exception e) {
+                throw new BaseException(BaseResponseStatus.DELETE_USER_ERROR);
+                }
+            }
+        else {
+            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        }
+    }
+
+
     public GetUserRes getUserInfo(Principal principal) throws BaseException {
         Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
         if(optionalUserEntity.isEmpty()) {
@@ -267,10 +349,10 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
         // userIdx가 생성한 프로필 idx 다 조회
-        List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(optional.get());
+        Optional<List<UserProfileEntity>> userProfileList = userProfileRepository.findAllByUserIdx(optional.get());
         List<GetProfileRes> getProfileList = new ArrayList<>();
         // 조회한 프로필 Id들 Dto에 담기
-        for (UserProfileEntity profile : userProfileList) {
+        for (UserProfileEntity profile : userProfileList.get()) {
             GetProfileRes getProfileRes = new GetProfileRes();
             getProfileRes.setUserProfileIdx(profile.getUserProfileIdx());
             getProfileRes.setNickname(profile.getNickName());

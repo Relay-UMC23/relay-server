@@ -55,6 +55,9 @@ public class RunningRecordEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'active'")
     private String status;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy="recordIdx", orphanRemoval = true)
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy="recordIdx", orphanRemoval = true)
     private List<LocationEntity> locations = new ArrayList<>();
 }

@@ -5,7 +5,10 @@ import com.example.relayRun.club.entity.TimeTableEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.Nullable;
 
+import javax.validation.constraints.Null;
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -19,6 +22,8 @@ public interface TimeTableRepository extends JpaRepository<TimeTableEntity, Long
                                         @Param(value = "end") LocalTime end);
 
     List<TimeTableEntity> findByMemberStatusIdx_MemberStatusIdx(Long memberStatusIdx);
+    Optional<TimeTableEntity> findByMemberStatusIdx(MemberStatusEntity memberStatus);
+    Optional<List<TimeTableEntity>> findAllByMemberStatusIdx(MemberStatusEntity memberStatus);
     Optional<TimeTableEntity> findByMemberStatusIdxAndDayAndStartLessThanEqualAndEndGreaterThanEqual(
             MemberStatusEntity memberStatusIdx,
             int day, LocalTime start, LocalTime end

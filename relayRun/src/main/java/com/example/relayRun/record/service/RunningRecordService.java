@@ -313,7 +313,9 @@ public class RunningRecordService {
             Optional<UserEntity> user = userRepository.findByEmail(principal.getName());
 
             List<RunningRecordEntity> records = new ArrayList<>();
+
             List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdxAndStatus(user.get(), "active");
+
             for (UserProfileEntity profile : profileList) {
                 List<MemberStatusEntity> statusList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(profile.getUserProfileIdx(), "active");
                 for (MemberStatusEntity status : statusList) {

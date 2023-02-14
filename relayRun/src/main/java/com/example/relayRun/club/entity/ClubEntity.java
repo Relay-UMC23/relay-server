@@ -6,6 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -54,9 +56,13 @@ public class ClubEntity extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(10) default 'ACTIVE'")
     private String status;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "clubIdx", orphanRemoval = true)
+    List<MemberStatusEntity> memberStatus = new ArrayList<>();
+
     public void changeRecruitStatus(String recruitStatus) {
         this.recruitStatus = recruitStatus;
     }
+    
     @Builder
     public ClubEntity(Long clubIdx, String name, String content, String imgURL, UserProfileEntity hostIdx,
                       Integer maxNum, Integer level, GoalType goalType, Float goal, String recruitStatus, String status){
