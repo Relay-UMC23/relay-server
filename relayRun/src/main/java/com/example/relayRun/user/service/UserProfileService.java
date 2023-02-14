@@ -67,7 +67,7 @@ public class UserProfileService {
         userProfile.setEmail(userProfileList.getUserIdx().getEmail());
 
         Optional<MemberStatusEntity> memberStatus = memberStatusRepository.findByUserProfileIdx(profileIdx);
-        if (memberStatus == null) {
+        if (memberStatus.isEmpty()) {
             userProfile.setClubIdx(0L);
             userProfile.setClubName("그룹에 속하지 않습니다.");
         }
@@ -85,10 +85,10 @@ public class UserProfileService {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
         // userIdx가 생성한 프로필 idx 다 조회
-        List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(optional.get()).get();
+        Optional<List<UserProfileEntity>> userProfileList = userProfileRepository.findAllByUserIdx(optional.get());
         List<GetProfileListRes> getProfileList = new ArrayList<>();
         // 조회한 프로필 Id들 Dto에 담기
-        for (UserProfileEntity profile : userProfileList) {
+        for (UserProfileEntity profile : userProfileList.get()) {
             GetProfileListRes getProfileRes = new GetProfileListRes();
             getProfileRes.setUserProfileIdx(profile.getUserProfileIdx());
             getProfileRes.setNickname(profile.getNickName());

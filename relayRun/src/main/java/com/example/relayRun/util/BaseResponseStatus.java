@@ -49,7 +49,8 @@ public enum BaseResponseStatus {
     POST_RECORD_NOT_MATCH_PARAM_PRINCIPAL(false, 4906, "요청한 프로필 아이디와 로그인 아이디가 일치하지 않습니다."),
     POST_USERS_INVALID_EMAIL(false, 5000, "이메일 양식이 맞지 않습니다."),
     POST_USERS_INVALID_PWD(false, 5001, "비밀번호 양식이 맞지 않습니다."),
-    POST_REVIEW_IMG_ERROR(false, 5001, "리뷰 이미지 에러입니다."),
+    POST_REVIEW_IMG_ERROR(false, 5002, "리뷰 이미지 에러입니다."),
+    POST_INVALID_USERS(false, 5003, "유효하지 않은 회원 정보입니다."),
 
     USER_PROFILE_EMPTY(false, 4000, "유효하지 않은 유저 프로필 인덱스입니다."),
     DUPLICATE_MEMBER_STATUS(false, 4000, "이미 그룹에 존재하는 유저 프로필입니다."),

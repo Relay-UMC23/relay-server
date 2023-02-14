@@ -312,8 +312,6 @@ public class RunningRecordService {
 
             List<RunningRecordEntity> records = new ArrayList<>();
 
-            List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdx(user.get()).get();
-
             List<UserProfileEntity> profileList = userProfileRepository.findAllByUserIdxAndStatus(user.get(), "active");
 
             for (UserProfileEntity profile : profileList) {

@@ -156,6 +156,13 @@ public class UserService {
 
     // 로그인
     public TokenDto logIn(PostLoginReq user) throws BaseException {
+        // user status 확인
+        Optional<UserEntity> userOptional = userRepository.findByEmail(user.getEmail());
+        if(userOptional.isPresent()){
+            if(userOptional.get().getStatus().equals("inactive")) {
+                throw new BaseException(BaseResponseStatus.POST_INVALID_USERS);
+            }
+        }
         if(!isRegexEmail(user.getEmail())){
             throw new BaseException(BaseResponseStatus.POST_USERS_INVALID_EMAIL);
         }
@@ -342,10 +349,10 @@ public class UserService {
             throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
         }
         // userIdx가 생성한 프로필 idx 다 조회
-        List<UserProfileEntity> userProfileList = userProfileRepository.findAllByUserIdx(optional.get()).get();
+        Optional<List<UserProfileEntity>> userProfileList = userProfileRepository.findAllByUserIdx(optional.get());
         List<GetProfileRes> getProfileList = new ArrayList<>();
         // 조회한 프로필 Id들 Dto에 담기
-        for (UserProfileEntity profile : userProfileList) {
+        for (UserProfileEntity profile : userProfileList.get()) {
             GetProfileRes getProfileRes = new GetProfileRes();
             getProfileRes.setUserProfileIdx(profile.getUserProfileIdx());
             getProfileRes.setNickname(profile.getNickName());

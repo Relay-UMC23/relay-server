@@ -27,7 +27,7 @@ public interface MemberStatusRepository extends JpaRepository<MemberStatusEntity
     Optional<MemberStatusEntity> findByUserProfileIdx(Long userProfileIdx);
     Optional<List<MemberStatusEntity>> findAllByUserProfileIdx(UserProfileEntity userProfile);
     Optional<List<MemberStatusEntity>> findAllByClubIdx(ClubEntity clubEntity);
-    MemberStatusEntity findByUserProfileIdx(Long userProfileIdx);
+    //MemberStatusEntity findByUserProfileIdx(Long userProfileIdx);
 
     List<MemberStatusEntity> findByClubIdxAndStatus(ClubEntity club, String status);
 
