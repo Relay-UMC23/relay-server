@@ -4,10 +4,7 @@ import com.example.relayRun.user.entity.UserProfileEntity;
 import com.example.relayRun.util.GoalType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -15,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @ApiModel(value = "그룹 생성 Model", description = "hostIdx는 그룹을 만드려고 하는 유저의 프로필 식별자를 넣으면 됩니다!")
 public class PostClubReq {
 

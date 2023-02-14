@@ -10,6 +10,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class PostMemberStatusReq {
     @ApiModelProperty(example = "유저의 프로필 인덱스")
     private Long userProfileIdx;

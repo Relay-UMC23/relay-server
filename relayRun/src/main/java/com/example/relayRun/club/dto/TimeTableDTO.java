@@ -10,6 +10,7 @@ import java.time.LocalTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class TimeTableDTO {
     @ApiModelProperty(example = "요일 | Integer | 월 : 1, ... 일 : 7")
     private Integer day;
