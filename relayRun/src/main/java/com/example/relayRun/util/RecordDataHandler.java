@@ -16,9 +16,9 @@ import java.util.List;
 
 public class RecordDataHandler {
     public static GetDailyRes get_summary(List<RunningRecordEntity> list, LocalDate date) {
-        float totalTime = 0;
-        float totalDist = 0;
-        float totalPace = 0;
+        Double totalTime = Double.valueOf(0);
+        Double totalDist = Double.valueOf(0);
+        Double totalPace = Double.valueOf(0);
 
         for (RunningRecordEntity rec : list) {
             totalTime += rec.getTime();

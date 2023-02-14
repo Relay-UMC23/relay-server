@@ -11,8 +11,10 @@ import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.user.dto.GetUserProfileClubRes;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.NonUniqueResultException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,17 +36,24 @@ public class UserProfileService {
     }
 
     public GetUserProfileClubRes getUserProfileClub(Long userProfileIdx) throws BaseException {
-        ClubEntity clubEntity = null;
-        List<MemberStatusEntity> memberStatusEntityList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(userProfileIdx, "active");
-        for (MemberStatusEntity memberStatusEntity : memberStatusEntityList) {
-            if (memberStatusEntity.getApplyStatus().equals("ACCEPTED")) {
-                clubEntity = memberStatusEntity.getClubIdx();
-                break;
-            }
+        Optional<UserProfileEntity> optionalUserProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
+        if (optionalUserProfile.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EMPTY);
         }
-        if (clubEntity != null)
-            return new GetUserProfileClubRes(clubEntity.getClubIdx(), clubEntity.getName());
-        throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+
+        Optional<MemberStatusEntity> optionalStatus = null;
+        try {
+            optionalStatus = memberStatusRepository.
+                    findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(userProfileIdx, "ACCEPTED", "active");
+        } catch (IncorrectResultSizeDataAccessException e){
+            // 프로필이 두개 이상의 그룹에 들어가 있을 때 (비정상 활동)
+            throw new BaseException(BaseResponseStatus.ERROR_DUPLICATE_CLUB);
+        }
+        if (optionalStatus.isEmpty()) {
+            // 프로필이 그룹에 들어가있지 않을 때
+            throw new BaseException(BaseResponseStatus.POST_RECORD_INVALID_CLUB_ACCESS);
+        }
+        return new GetUserProfileClubRes(optionalStatus.get().getClubIdx().getClubIdx(), optionalStatus.get().getClubIdx().getName());
     }
 
     public GetProfileRes getUserProfile(Principal principal, Long profileIdx) throws BaseException {

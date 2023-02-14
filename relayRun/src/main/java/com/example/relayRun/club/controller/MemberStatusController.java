@@ -26,7 +26,7 @@ public class MemberStatusController {
     @ApiOperation(value = "그룹 신청", notes = "path variable로 신청하고자 하는 그룹의 clubIdx, body로는 신청자의 userProfileIdx와 신청자의 시간표 정보를 리스트 형식으로 보내면 그룹 신청과 시간표 등록이 완료됩니다.")
     @ResponseBody
     @PostMapping("/{clubIdx}")
-    public BaseResponse<String> createMemberStatus(@ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx, @ApiParam(value = "신청자의 userProfileIdx과 시간표 정보") @RequestBody PostMemberStatusReq memberStatus) {
+    public BaseResponse<String> createMemberStatus(@ApiParam(value = "신청하고자 하는 그룹의 clubIdx") @PathVariable Long clubIdx, @RequestBody PostMemberStatusReq memberStatus) {
         try {
             memberStatusService.createMemberStatus(clubIdx, memberStatus);
             return new BaseResponse<>("그룹 신청 및 시간표 등록 완료");

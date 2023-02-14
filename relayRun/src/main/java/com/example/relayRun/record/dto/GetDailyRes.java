@@ -17,13 +17,13 @@ public class GetDailyRes {
     LocalDate date;
 
     @ApiModelProperty(example = "총 시간")
-    private Float totalTime;
+    private Double totalTime;
 
     @ApiModelProperty(example = "총 거리")
-    private Float totalDist;
+    private Double totalDist;
 
     @ApiModelProperty(example = "평균 속도")
-    float avgPace;
+    private Double avgPace;
 
     @ApiModelProperty(example = "목표 종류")
     private GoalType goalType;

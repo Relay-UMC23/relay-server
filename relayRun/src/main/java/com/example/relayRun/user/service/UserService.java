@@ -77,7 +77,7 @@ public class UserService {
 
     private RedisUtil redisUtil;
 
-    private String bucketURL = "https://runningmen-bucket.s3.ap-northeast-2.amazonaws.com";
+    private String bucketURL = "https://team23-bucket.s3.ap-northeast-2.amazonaws.com/public/profile";
 
     private HashMap<Integer, String> avatar = new HashMap<>() {{
         put(1, bucketURL + "/1.png");

@@ -34,4 +34,6 @@ public interface MemberStatusRepository extends JpaRepository<MemberStatusEntity
     
     Optional<MemberStatusEntity> findByUserProfileIdx_UserProfileIdxAndClubIdx_ClubIdxAndApplyStatusAndStatus(Long userProfileIdx, Long clubIdx, String applyStatus, String status);
 
+    @Query(value = "select count(member_status_idx) as num from member_status where club_idx = :clubIdx", nativeQuery = true)
+    Long findByClubIdx(Long clubIdx);
 }

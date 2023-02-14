@@ -68,9 +68,9 @@ public class ClubController {
             @ApiResponse(code = 404, message = "서버 문제 발생"),
             @ApiResponse(code = 500, message = "페이지를 찾을 수 없습니다")
     })
-    @ApiOperation(value="그룹 생성(방장)", notes="token 필요 / body에는 이름, 방장 idx, 소개, 이미지, 최대인원, 레벨, 목표 분류(선택), 목표치 입력\n" +
-
+    @ApiOperation(value="그룹 생성(방장)", notes="token 필요 / body에는 이름, 방장 idx, 소개, 최대인원, 레벨, 목표 분류(선택), 목표치 입력\n" +
             "hostIdx에는 그룹을 생성하려는 유저의 프로필 식별자값 (int)를 넣어주시면 됩니다!!\n" +
+            "대표 이미지는 디폴트 사진으로 적용되도록 변경하였습니다." +
             "timetable 예시는 디스코드에 적어두었습니다!")
     public BaseResponse<String> makeClub(
             Principal principal,

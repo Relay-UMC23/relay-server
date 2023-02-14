@@ -59,6 +59,10 @@ public class ClubEntity extends BaseTimeEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "clubIdx", orphanRemoval = true)
     List<MemberStatusEntity> memberStatus = new ArrayList<>();
 
+    public void changeRecruitStatus(String recruitStatus) {
+        this.recruitStatus = recruitStatus;
+    }
+    
     @Builder
     public ClubEntity(Long clubIdx, String name, String content, String imgURL, UserProfileEntity hostIdx,
                       Integer maxNum, Integer level, GoalType goalType, Float goal, String recruitStatus, String status){

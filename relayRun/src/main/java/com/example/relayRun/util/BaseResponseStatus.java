@@ -16,12 +16,14 @@ public enum BaseResponseStatus {
     FAILED_TO_LOGIN(false, 2007, "없는 아이디이거나 비밀번호가 틀렸습니다."),
     FAILED_TO_SEARCH(false, 2008, "검색을 실패하였습니다."),
     FAILED_TO_FIND_URL(false, 2009,"요청할 수 없는 url입니다."),
+    FAILED_TO_APPLY_CLUB(false, 2010, "그룹 모집이 마감되었습니다."),
 
     // 달리기단;
     RECORD_UNAVAILABLE(false, 2100,"기록이 존재하지 않습니다."),
     INVALID_DATE_FORMAT(false, 2101, "yyyy-mm-dd의 날짜 형식을 입력해주세요."),
 
     CLUB_UNAVAILABLE(false, 2200, "존재하지 않는 그룹입니다."),
+    CLUB_CLOSED(false, 2201, "모집이 완료된 그룹입니다."),
 
     FAILED_TO_FIND_USER(false, 2010, "유효하지 않은 인증 코드입니다."),
     /*
@@ -55,6 +57,8 @@ public enum BaseResponseStatus {
     USER_PROFILE_EMPTY(false, 4000, "유효하지 않은 유저 프로필 인덱스입니다."),
     DUPLICATE_MEMBER_STATUS(false, 4000, "이미 그룹에 존재하는 유저 프로필입니다."),
     CLUB_EMPTY(false, 4000, "유효하지 않은 그룹 인덱스입니다."),
+    ERROR_DUPLICATE_CLUB(false, 4801, "두개 이상의 그룹에 가입된 유저입니다. (비정상)"),
+
     DUPLICATE_TIMETABLE(false, 4000, "중복된 시간표입니다."),
     POST_MEMBER_STATUS_FAIL(false, 4004, "그룹 신청에 실패하였습니다"),
     MEMBER_STATUS_EMPTY(false, 4000, "신청된 그룹이 존재하지 않습니다."),

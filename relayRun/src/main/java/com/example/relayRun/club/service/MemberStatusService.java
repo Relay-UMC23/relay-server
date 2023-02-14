@@ -14,6 +14,7 @@ import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
 import com.example.relayRun.util.RecordDataHandler;
+import org.hibernate.NonUniqueResultException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,26 +46,38 @@ public class MemberStatusService {
         this.userRepository = userRepository;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = BaseException.class)
     public void createMemberStatus(Long clubIdx, PostMemberStatusReq memberStatus) throws BaseException {
         try {
             Long userProfileIdx = memberStatus.getUserProfileIdx();
-            Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdx(userProfileIdx);
-            if(userProfile.isEmpty()) {
+            Optional<UserProfileEntity> userProfile = userProfileRepository.findByUserProfileIdxAndStatus(userProfileIdx, "active");
+            if (userProfile.isEmpty()) {
                 throw new BaseException(BaseResponseStatus.USER_PROFILE_EMPTY);
             }
 
-            List<MemberStatusEntity> validationList = memberStatusRepository.findByUserProfileIdx_UserProfileIdxAndStatus(userProfileIdx, "active");
-            if(!validationList.isEmpty()) {
+            Optional<MemberStatusEntity> optionalMemberStatus = memberStatusRepository.
+                    findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(userProfileIdx, "ACCEPTED", "active");
+            if (!optionalMemberStatus.isEmpty()) {
+                // 이미 그룹 하나에 들어가있는 경우
                 throw new BaseException(BaseResponseStatus.DUPLICATE_MEMBER_STATUS);
             }
 
             //신청 대상 그룹 정보
             Optional<ClubEntity> club = clubRepository.findById(clubIdx);
-            if(club.isEmpty()) {
-                throw new BaseException(BaseResponseStatus.FAILED_TO_SEARCH);
+            if (club.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.CLUB_UNAVAILABLE);
             }
-
+            if (!club.get().getRecruitStatus().equals("recruiting")) {
+                throw new BaseException(BaseResponseStatus.CLUB_CLOSED);
+            }
+            // clubIdx로 누적 memberstatus 조회
+            Long num = memberStatusRepository.findByClubIdx(club.get().getClubIdx());
+            System.out.println("신청 인원 수 : "+ num);
+            if(num >= club.get().getMaxNum()) { // maxNum보다 신청인원 많으면
+                club.get().changeRecruitStatus("finished");
+                clubRepository.save(club.get());
+                throw new BaseException(BaseResponseStatus.FAILED_TO_APPLY_CLUB);
+            }
             //member_status 등록
             MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
                     .clubIdx(club.get())
@@ -76,8 +89,14 @@ public class MemberStatusService {
             Long memberStatusIdx = memberStatusEntity.getMemberStatusIdx();
             List<TimeTableDTO> timeTables = memberStatus.getTimeTables();
 
+            // 이 함수가 실패(시간표 생성 못함)일 경우 위 memberStatus에 대한 rollback 적용
             this.createTimeTable(memberStatusIdx, timeTables);
-        } catch (Exception e) {
+
+        } catch (BaseException e) { // profile 존재 x, 그룹 존재 x, 시간표 등록 실패일 경우
+            throw new BaseException(e.getStatus());
+        } catch (NonUniqueResultException e) { // 두개 이상의 그룹에 들어가있는 비정상 상황
+            throw new BaseException(BaseResponseStatus.ERROR_DUPLICATE_CLUB);
+        } catch (Exception e) { // 이외의 경우 에러처리
             throw new BaseException(BaseResponseStatus.POST_MEMBER_STATUS_FAIL);
         }
     }

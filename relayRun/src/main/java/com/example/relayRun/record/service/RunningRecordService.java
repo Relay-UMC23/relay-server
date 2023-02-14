@@ -90,19 +90,21 @@ public class RunningRecordService {
                 throw new BaseException(BaseResponseStatus.POST_RECORD_NOT_MATCH_PARAM_PRINCIPAL);
             MemberStatusEntity memberStatus = optionalMemberStatus.get();
 
-            RunningRecordEntity recordEntity = new RunningRecordEntity();
-            recordEntity.setMemberStatusIdx(memberStatus);
-            recordEntity.setDistance(0.0f);
-            recordEntity.setTime(0.0f);
-            recordEntity.setPace(0.0f);
-            recordEntity = runningRecordRepository.save(recordEntity);
-
             Optional<TimeTableEntity> optionalTimeTable = timeTableRepository.findByMemberStatusIdxAndDayAndStartLessThanEqualAndEndGreaterThanEqual(
                     memberStatus, RecordDataHandler.toIntDay(LocalDate.now().getDayOfWeek()), LocalTime.now(), LocalTime.now()
             );
             if (optionalTimeTable.isEmpty())
                 throw new BaseException(BaseResponseStatus.POST_RECORD_NO_TIMETABLE);
             TimeTableEntity timeTable = optionalTimeTable.get();
+
+            RunningRecordEntity recordEntity = new RunningRecordEntity();
+            recordEntity.setMemberStatusIdx(memberStatus);
+            recordEntity.setDistance(0.0f);
+            recordEntity.setTime(0.0f);
+            recordEntity.setPace(0.0f);
+            recordEntity.setGoal(timeTable.getGoal());
+            recordEntity.setGoalType(timeTable.getGoalType());
+            recordEntity = runningRecordRepository.save(recordEntity);
 
             return PostRunningInitRes.builder()
                     .runningRecordIdx(recordEntity.getRunningRecordIdx())
@@ -300,7 +302,7 @@ public class RunningRecordService {
 
 
     /**
-     * 개인 기록 일별 요약 GET회 (프로필이 많아지는 경우에만 사용)
+     * 개인 기록 일별 요약 GET (프로필이 많아지는 경우에만 사용)
      * @param principal
      * @param date
      * @return
@@ -348,13 +350,22 @@ public class RunningRecordService {
             if (club.isEmpty()) {
                 throw new Exception("CLUB_UNAVAILABLE");
             }
-            List<RunningRecordEntity> records = runningRecordRepository
-                    .findByMemberStatusIdx_ClubIdxAndCreatedAtBetweenAndRunningStatus(club.get(), date.atStartOfDay(), date.plusDays(1).atStartOfDay(), "finish");
+            List<MemberStatusEntity> statusList = memberStatusRepository.findByClubIdxAndStatus(club.get(), "active");
 
-            GetDailyRes result = RecordDataHandler.get_summary(records, date);
-            result.setGoalType(club.get().getGoalType());
-            result.setGoalValue(club.get().getGoal());
-            return result;
+            Tuple record = runningRecordRepository
+                    .selectByMemberStatusAndDateAndStatus_Club(statusList, date, "active");
+
+            GetDailyRes dailyRes = GetDailyRes.builder()
+                    .date(date)
+                    .totalTime(record.get(1, Double.class))
+                    .totalDist(record.get(2, Double.class))
+                    .avgPace(record.get(3, Double.class))
+                    .goalType(club.get().getGoalType())
+                    .goalValue(club.get().getGoal())
+                    .build();
+
+            return dailyRes;
+
         } catch (Exception e) {
             if (e.getMessage().equals("CLUB_UNAVAILABLE")) {
                 throw new BaseException(BaseResponseStatus.CLUB_UNAVAILABLE);

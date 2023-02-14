@@ -27,9 +27,6 @@ public class PostClubReq {
     @ApiModelProperty(example="그룹 소개", required = true)
     private String content;
 
-    @ApiModelProperty(example="그룹 대표 이미지", required = true)
-    private String imgURL;
-
     @ApiModelProperty(example="방장 식별자 (현재 유저의 프로필 식별자)", required = true)
     private Long hostIdx;
 

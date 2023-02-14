@@ -12,6 +12,7 @@ import com.example.relayRun.user.repository.UserProfileRepository;
 import com.example.relayRun.user.repository.UserRepository;
 import com.example.relayRun.util.BaseException;
 import com.example.relayRun.util.BaseResponseStatus;
+import org.hibernate.NonUniqueResultException;
 import com.example.relayRun.record.service.RunningRecordService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,8 @@ public class ClubService {
     private final MemberStatusService memberStatusService;
 
     private final RunningRecordService runningRecordService;
+
+    private String bucketURL = "https://team23-bucket.s3.ap-northeast-2.amazonaws.com/public/club";
 
     public ClubService(ClubRepository clubRepository, UserRepository userRepository, UserProfileRepository userProfileRepository,
                        MemberStatusRepository memberStatusRepository,
@@ -164,51 +167,70 @@ public class ClubService {
     }
 
     // 그룹 생성
-    @Transactional
+    @Transactional(rollbackFor = BaseException.class)
     public void makesClub(Principal principal, PostClubReq clubReq) throws BaseException {
-        Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
-        if (optionalUserEntity.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+        try {
+            Optional<UserEntity> optionalUserEntity = userRepository.findByEmail(principal.getName());
+            if (optionalUserEntity.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.FAILED_TO_LOGIN);
+            }
+            UserEntity userEntity = optionalUserEntity.get();
+
+            Optional<UserProfileEntity> optionalUserProfileEntity = userProfileRepository.findByUserProfileIdx(clubReq.getHostIdx());
+            if (optionalUserProfileEntity.isEmpty()) {
+                throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EMPTY);
+            }
+            UserProfileEntity userProfileEntity = optionalUserProfileEntity.get();
+
+            if (!userProfileEntity.getUserIdx().equals(userEntity)) {
+                throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
+            }
+
+            // 이미 그룹에 있을 경우 예외처리
+            Optional<MemberStatusEntity> optionalMemberStatus = memberStatusRepository.
+                    findByUserProfileIdx_UserProfileIdxAndApplyStatusAndStatus(
+                            userProfileEntity.getUserProfileIdx(), "ACCEPTED", "active");
+            if (!optionalMemberStatus.isEmpty()) {
+                // 이미 그룹 하나에 들어가있는 경우
+                throw new BaseException(BaseResponseStatus.DUPLICATE_MEMBER_STATUS);
+            }
+
+            if (clubReq.getName().isEmpty()) {
+                throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
+            }
+            if (clubReq.getContent().isEmpty()) {
+                throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
+            }
+
+            ClubEntity clubEntity = ClubEntity.builder()
+                    .name(clubReq.getName())
+                    .content(clubReq.getContent())
+                    .imgURL(bucketURL + "/yellow.png")
+                    .hostIdx(userProfileEntity)
+                    .maxNum(clubReq.getMaxNum())
+                    .level(clubReq.getLevel())
+                    .goalType(clubReq.getGoalType())
+                    .goal(clubReq.getGoal())
+                    .build();
+            clubRepository.save(clubEntity);
+
+            // host Member Status update
+            MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
+                    .clubIdx(clubEntity)
+                    .userProfileIdx(optionalUserProfileEntity.get())
+                    .build();
+            memberStatusRepository.save(memberStatusEntity);
+
+            // host timetable update
+            memberStatusService.createTimeTable(memberStatusEntity.getMemberStatusIdx(), clubReq.getTimeTable());
+
+        } catch (BaseException e) {
+            throw new BaseException(e.getStatus());
+        } catch (NonUniqueResultException e) { // 두개 이상의 그룹에 들어가있는 비정상 상황
+            throw new BaseException(BaseResponseStatus.ERROR_DUPLICATE_CLUB);
+        } catch (Exception e) {
+            throw new BaseException(BaseResponseStatus.POST_CLUBS_FAIL);
         }
-        UserEntity userEntity = optionalUserEntity.get();
-
-        Optional<UserProfileEntity> optionalUserProfileEntity = userProfileRepository.findByUserProfileIdx(clubReq.getHostIdx());
-        if (optionalUserProfileEntity.isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EMPTY);
-        }
-        UserProfileEntity userProfileEntity = optionalUserProfileEntity.get();
-
-        if (!userProfileEntity.getUserIdx().equals(userEntity)) {
-            throw new BaseException(BaseResponseStatus.POST_USERS_PROFILES_EQUALS);
-        }
-
-        if (clubReq.getName().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_NAME_EMPTY);
-        }
-        if (clubReq.getContent().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.POST_CLUBS_CONTENTS_EMPTY);
-        }
-        ClubEntity clubEntity = ClubEntity.builder()
-                .name(clubReq.getName())
-                .content(clubReq.getContent())
-                .imgURL(clubReq.getImgURL())
-                .hostIdx(userProfileEntity)
-                .maxNum(clubReq.getMaxNum())
-                .level(clubReq.getLevel())
-                .goalType(clubReq.getGoalType())
-                .goal(clubReq.getGoal())
-                .build();
-        clubRepository.save(clubEntity);
-
-        // host Member Status update
-        MemberStatusEntity memberStatusEntity = MemberStatusEntity.builder()
-                .clubIdx(clubEntity)
-                .userProfileIdx(optionalUserProfileEntity.get())
-                .build();
-
-        memberStatusRepository.save(memberStatusEntity);
-
-        memberStatusService.createTimeTable(memberStatusEntity.getMemberStatusIdx(), clubReq.getTimeTable());
     }
 
     @Transactional
