@@ -1,11 +1,10 @@
 package com.example.relayRun.config;
 
-import com.example.relayRun.jwt.JwtFilter;
-import com.example.relayRun.user.oauth2.OAuth2SuccessHandler;
 import com.example.relayRun.jwt.TokenProvider;
 import com.example.relayRun.jwt.exception.JwtAccessDeniedHandler;
 import com.example.relayRun.jwt.exception.JwtAuthenticationEntryPoint;
-import com.example.relayRun.jwt.service.CustomOAuth2UserService;
+import com.example.relayRun.oauth2.controller.OAuth2SuccessHandler;
+import com.example.relayRun.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,7 +13,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @RequiredArgsConstructor

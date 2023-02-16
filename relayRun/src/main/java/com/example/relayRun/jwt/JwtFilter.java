@@ -1,6 +1,5 @@
 package com.example.relayRun.jwt;
 
-import com.example.relayRun.user.dto.SocialUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,8 +50,4 @@ public class JwtFilter extends OncePerRequestFilter {
         return null;
     }
 
-    public Authentication getAuthentication(SocialUserDto member) {
-        return new UsernamePasswordAuthenticationToken(member, "",
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
-    }
 }
