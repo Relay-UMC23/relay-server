@@ -119,8 +119,8 @@ public class FCMService {
                     .title("뛸 시간입니다!")
                     .body(start.toString() + "부터 달리기 시작하세요!")
                     .build();
-//            senderService.sendMessageById(user.getUserIdx(), message);
-            senderService.sendMessageToAll(message);
+            senderService.sendMessageById(user.getUserIdx(), message);
+//            senderService.sendMessageToAll(message);
         } catch (BaseException e) {
             log.error(e.getMessage());
         }
@@ -142,19 +142,19 @@ public class FCMService {
                     .title("오늘의 런닝 그룹 완주!")
                     .body(memberStatus.getClubIdx().getName() + "그룹 완주를 축하합니다. 내일도 힘내봐요!")
                     .build();
-//            senderService.sendMessageToGroup(memberStatus.getClubIdx().getClubIdx(), message);
-            senderService.sendMessageToAll(message);
+            senderService.sendMessageToGroup(memberStatus.getClubIdx().getClubIdx(), message);
+//            senderService.sendMessageToAll(message);
         }else {
             TimeTableEntity timeTable = optionalTimeTable.get();
             NotificationMessage message = NotificationMessage.builder()
                     .title("바톤터치!")
                     .body(memberStatus.getUserProfileIdx().getNickName() + "님이 바톤을 넘겼습니다! 꼭 달려주세요!")
                     .build();
-//            senderService.sendMessageById(
-//                    timeTable.getMemberStatusIdx().getUserProfileIdx().getUserIdx().getUserIdx(),
-//                    message
-//            );
-            senderService.sendMessageToAll(message);
+            senderService.sendMessageById(
+                    timeTable.getMemberStatusIdx().getUserProfileIdx().getUserIdx().getUserIdx(),
+                    message
+            );
+//            senderService.sendMessageToAll(message);
         }
     }
 }
